@@ -22,9 +22,32 @@ class MessageDirections(object):
     VALUES = {IN, OUT}
 
 
-class Message(object):
+class MessageOrigin:
+    def __init__(self, origin_id):
+        """
+        Represents a message's origin.
+
+        :param origin_id: Unique identifier for this message in the origin dataset.
+                          The same message in the origin dataset should always be assigned the same id.
+        :type origin_id: str
+        """
+        self.origin_id = origin_id
+
+    def to_dict(self):
+        return {
+            "origin_id": self.origin_id
+        }
+
+    @classmethod
+    def from_dict(cls, d):
+        return MessageOrigin(
+            d["origin_id"]
+        )
+
+
+class Message:
     def __init__(self, text, timestamp, participant_uuid, direction, channel_operator, status, dataset, labels,
-                 message_id=None, coda_id=None, last_updated=None, previous_datasets=None,):
+                 origin, message_id=None, coda_id=None, last_updated=None, previous_datasets=None):
         """
         Represents a message sent to or received from a participant.
 
@@ -44,6 +67,8 @@ class Message(object):
         :type dataset: str
         :param labels: Labels assigned to this message.
         :type labels: list of core_data_modules.data_models.Label
+        :param origin: Origin of this message.
+        :type origin: MessageOrigin
         :param message_id: Id of this message. If None, a message id will automatically be generated in the constructor.
         :type message_id: str | None
         :param coda_id: Id to use to look-up this message in Coda, optional.
@@ -71,11 +96,11 @@ class Message(object):
         self.status = status
         self.dataset = dataset
         self.labels = labels
+        self.origin = origin
         self.message_id = message_id
         self.coda_id = coda_id
         self.last_updated = last_updated
         self.previous_datasets = previous_datasets
-
 
     def get_latest_labels(self):
         """
@@ -93,6 +118,7 @@ class Message(object):
             "status": self.status,
             "dataset": self.dataset,
             "labels": [label.to_dict() for label in self.labels],
+            "origin": self.origin.to_dict(),
             "message_id": self.message_id,
             "last_updated": self.last_updated,
             "previous_datasets": self.previous_datasets,
@@ -114,6 +140,7 @@ class Message(object):
             status=d["status"],
             dataset=d["dataset"],
             labels=[Label.from_dict(label) for label in d["labels"]],
+            origin=MessageOrigin.from_dict(d["origin"]),
             previous_datasets=d["previous_datasets"],
             message_id=d.get("message_id"),
             coda_id=d.get("coda_id"),
