@@ -162,7 +162,7 @@ class Message:
 
         last_updated = d["last_updated"]
         if type(last_updated) == str:
-            last_updated = datetime.fromisoformat(timestamp)
+            last_updated = datetime.fromisoformat(last_updated)
 
         return cls(
             text=d["text"],
