@@ -1,4 +1,6 @@
+import json
 import uuid
+from datetime import datetime
 
 from core_data_modules.data_models import Label
 from core_data_modules.data_models.message import get_latest_labels
@@ -146,6 +148,33 @@ class Message:
             coda_id=d.get("coda_id"),
             last_updated=d["last_updated"]
         )
+
+    def to_json(self):
+        """
+        Safely serializes this message to json, converting timestamps to ISO strings.
+
+        :return: This message as json.
+        :rtype: str
+        """
+        d = self.to_dict()
+        d["timestamp"] = d["timestamp"].isoformat()
+        d["last_updated"] = d["last_updated"].isoformat()
+        return json.dumps(d)
+
+    @classmethod
+    def from_json(cls, blob):
+        """
+        De-serializes this message from json produced by `Message.to_json`
+
+        :param blob: JSON blob to de-serialize.
+        :type blob: str
+        :return: De-serialized message.
+        :rtype: Message
+        """
+        d = json.loads(blob)
+        d["timestamp"] = datetime.fromisoformat(d["timestamp"])
+        d["last_updated"] = datetime.fromisoformat(d["last_updated"])
+        return cls.from_dict(d)
 
     def copy(self):
         return Message.from_dict(self.to_dict())
