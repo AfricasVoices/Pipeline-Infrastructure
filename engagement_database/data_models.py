@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from core_data_modules.data_models import Label
 from core_data_modules.data_models.message import get_latest_labels
@@ -108,7 +109,16 @@ class Message:
         """
         return get_latest_labels(self.labels)
 
-    def to_dict(self):
+    def to_dict(self, serialize_datetimes_to_str=False):
+        """
+        Serializes this message to a dict.
+
+        :param serialize_datetimes_to_str: Whether to serialize timestamps to strings instead of leaving as Python
+                                           datetime objects.
+        :type serialize_datetimes_to_str: bool
+        :return: This message serialized to a dict.
+        :rtype: dict
+        """
         message_dict = {
             "text": self.text,
             "timestamp": self.timestamp,
@@ -127,13 +137,36 @@ class Message:
         if self.coda_id is not None:
             message_dict["coda_id"] = self.coda_id
 
+        if serialize_datetimes_to_str:
+            message_dict["timestamp"] = message_dict["timestamp"].isoformat()
+            message_dict["last_updated"] = message_dict["last_updated"].isoformat()
+
         return message_dict
 
     @classmethod
     def from_dict(cls, d):
+        """
+        Deserializes a dict to a Message.
+
+        Converts timestamps that were serialized to strings by `cls.to_dict` back to Python datetime objects.
+
+        :param d: Dict to deserialize.
+        :type d: dict
+        :return: Deserialized message
+        :rtype: Message
+        """
+        # Handle variables that may have been serialized to strings by `cls.to_dict()`.
+        timestamp = d["timestamp"]
+        if type(timestamp) == str:
+            timestamp = datetime.fromisoformat(timestamp)
+
+        last_updated = d["last_updated"]
+        if type(last_updated) == str:
+            last_updated = datetime.fromisoformat(timestamp)
+
         return cls(
             text=d["text"],
-            timestamp=d["timestamp"],
+            timestamp=timestamp,
             participant_uuid=d["participant_uuid"],
             direction=d["direction"],
             channel_operator=d["channel_operator"],
@@ -144,7 +177,7 @@ class Message:
             previous_datasets=d["previous_datasets"],
             message_id=d.get("message_id"),
             coda_id=d.get("coda_id"),
-            last_updated=d["last_updated"]
+            last_updated=last_updated
         )
 
     def copy(self):
