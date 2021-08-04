@@ -49,14 +49,14 @@ class EngagementDatabase(object):
     def _message_ref(self, message_id):
         return self._messages_ref().document(message_id)
 
-    def get_history_for_message(self, message_id, query_filter=lambda q: q, transaction=None):
+    def get_history_for_message(self, message_id, firestore_query_filter=lambda q: q, transaction=None):
         """
         Gets all the history entries for a message, sorted by history timestamp.
 
         :param message_id: Id of message to get history for.
         :type message_id: str
-        :param query_filter: Filter to apply to the underlying Firestore query.
-        :type query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
+        :param firestore_query_filter: Filter to apply to the underlying Firestore query.
+        :type firestore_query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
         :param transaction: Transaction to run this get in or None.
         :type transaction: google.cloud.firestore.Transaction | None
         :return: History entries for the requested message.
@@ -64,7 +64,7 @@ class EngagementDatabase(object):
         """
         message_ref = self._message_ref(message_id)
         query = self._history_ref().where("update_path", "==", message_ref).order_by("timestamp")
-        query = query_filter(query)
+        query = firestore_query_filter(query)
         data = query.get(transaction=transaction)
         return [HistoryEntry.from_dict(d.to_dict(), doc_type=Message) for d in data]
 
@@ -84,7 +84,7 @@ class EngagementDatabase(object):
             return None
         return Message.from_dict(doc.to_dict())
 
-    def get_messages(self, query_filter=lambda q: q, transaction=None):
+    def get_messages(self, firestore_query_filter=lambda q: q, transaction=None):
         """
         Gets messages from the database.
 
@@ -94,15 +94,15 @@ class EngagementDatabase(object):
         Note also that providing a transaction for a query that matches a lot of documents will lock a large number
         of documents, causing performance issues.
 
-        :param query_filter: Filter to apply to the underlying Firestore query.
-        :type query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
+        :param firestore_query_filter: Filter to apply to the underlying Firestore query.
+        :type firestore_query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
         :param transaction: Transaction to run this get in or None.
         :type transaction: google.cloud.firestore.Transaction | None
         :return: Messages downloaded from the database.
         :rtype: list of engagement_database.data_models.Message
         """
         query = self._messages_ref()
-        query = query_filter(query)
+        query = firestore_query_filter(query)
         data = query.get(transaction=transaction)
         return [Message.from_dict(d.to_dict()) for d in data]
 
