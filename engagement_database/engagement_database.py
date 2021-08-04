@@ -101,8 +101,8 @@ class EngagementDatabase(object):
         :return: Messages downloaded from the database.
         :rtype: list of engagement_database.data_models.Message
         """
-        query = self._messages_ref()
-        query = firestore_query_filter(query)
+        messages_ref = self._messages_ref()
+        query = firestore_query_filter(messages_ref)
         data = query.get(transaction=transaction)
         return [Message.from_dict(d.to_dict()) for d in data]
 
