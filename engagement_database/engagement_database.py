@@ -138,7 +138,7 @@ class EngagementDatabase(object):
 
         # Log a history event for this update
         history_entry = HistoryEntry(
-            update_path=self._message_ref(message.message_id),
+            update_path=self._message_ref(message.message_id).path,
             origin=origin,
             updated_doc=message,
             timestamp=firestore.SERVER_TIMESTAMP
