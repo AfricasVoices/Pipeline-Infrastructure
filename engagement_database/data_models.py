@@ -211,14 +211,28 @@ class HistoryEntry(object):
         self.origin = origin
         self.timestamp = timestamp
 
-    def to_dict(self):
-        return {
+    def to_dict(self, serialize_datetimes_to_str=False):
+        """
+        Serializes this history entry to a dict.
+
+        :param serialize_datetimes_to_str: Whether to serialize timestamps to strings instead of leaving as Python
+                                           datetime objects. Applies recursively to all nested objects in this entry.
+        :type serialize_datetimes_to_str: bool
+        :return: This message serialized to a dict.
+        :rtype: dict
+       """
+        history_entry_dict = {
             "history_entry_id": self.history_entry_id,
             "update_path": self.update_path,
-            "updated_doc": self.updated_doc.to_dict(),
+            "updated_doc": self.updated_doc.to_dict(serialize_datetimes_to_str),
             "origin": self.origin.to_dict(),
             "timestamp": self.timestamp
         }
+
+        if serialize_datetimes_to_str:
+            history_entry_dict["timestamp"] = history_entry_dict["timestamp"].isoformat()
+
+        return history_entry_dict
 
     @classmethod
     def from_dict(cls, d, doc_type=None):
@@ -231,12 +245,16 @@ class HistoryEntry(object):
         :return: HistoryEntry instance
         :rtype: HistoryEntry
         """
+        timestamp = d["timestamp"]
+        if type(timestamp) == str:
+            timestamp = datetime.fromisoformat(timestamp)
+
         return HistoryEntry(
             history_entry_id=d["history_entry_id"],
             update_path=d["update_path"],
             updated_doc=d["updated_doc"] if doc_type is None else doc_type.from_dict(d["updated_doc"]),
             origin=HistoryEntryOrigin.from_dict(d["origin"]),
-            timestamp=d["timestamp"]
+            timestamp=timestamp
         )
 
 

@@ -49,6 +49,28 @@ class EngagementDatabase(object):
     def _message_ref(self, message_id):
         return self._messages_ref().document(message_id)
 
+    def get_history(self, firestore_query_filter=lambda q: q, transaction=None):
+        """
+        Gets all the history entries in the database.
+
+        Note that requesting large numbers of messages is expensive and this function doesn't guarantee that all
+        messages will be downloaded. Use of where and limit filters is strongly encouraged.
+
+        :param firestore_query_filter: Filter to apply to the underlying Firestore query.
+        :type firestore_query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
+        :param transaction: Transaction to run this get in or None.
+        :type transaction: google.cloud.firestore.Transaction | None
+        :return: History entries for the requested message.
+        :rtype: list of engagement_database.data_models.HistoryEntry
+        """
+        query = self._history_ref()
+        query = firestore_query_filter(query)
+        data = query.get(transaction=transaction)
+
+        # Deserialize all history entries as being for Messages.
+        # If we add any other data models that have history tracked, we may need to update this.
+        return [HistoryEntry.from_dict(d.to_dict(), doc_type=Message) for d in data]
+
     def get_history_for_message(self, message_id, firestore_query_filter=lambda q: q, transaction=None):
         """
         Gets all the history entries for a message, sorted by history timestamp.
