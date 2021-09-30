@@ -128,14 +128,15 @@ class EngagementDatabase(object):
         data = query.get(transaction=transaction)
         return [Message.from_dict(d.to_dict()) for d in data]
 
-    def set_message(self, message, origin, transaction=None):
+    def set_message(self, message, origin=None, transaction=None):
         """
         Sets a message in the database.
 
         :param message: Message to write to the database.
         :type message: engagement_database.data_models.Message
-        :param origin: Origin details for this update.
-        :type origin: engagement_database.data_models.HistoryEntryOrigin
+        :param origin: Origin details for this update or None.
+                       If None, sets message without setting history
+        :type origin: engagement_database.data_models.HistoryEntryOrigin | None
         :param transaction: Transaction to run this update in or None.
                             If None, writes immediately, otherwise adds the updates to a transaction that will need
                             to be explicitly committed elsewhere.
@@ -158,17 +159,18 @@ class EngagementDatabase(object):
             message.to_dict()
         )
 
-        # Log a history event for this update
-        history_entry = HistoryEntry(
-            update_path=self._message_ref(message.message_id).path,
-            origin=origin,
-            updated_doc=message,
-            timestamp=firestore.SERVER_TIMESTAMP
-        )
-        transaction.set(
-            self._history_entry_ref(history_entry.history_entry_id),
-            history_entry.to_dict()
-        )
+        if origin:
+            # Log a history event for this update
+            history_entry = HistoryEntry(
+                update_path=self._message_ref(message.message_id).path,
+                origin=origin,
+                updated_doc=message,
+                timestamp=firestore.SERVER_TIMESTAMP
+            )
+            transaction.set(
+                self._history_entry_ref(history_entry.history_entry_id),
+                history_entry.to_dict()
+            )
 
         if commit_before_returning:
             transaction.commit()
