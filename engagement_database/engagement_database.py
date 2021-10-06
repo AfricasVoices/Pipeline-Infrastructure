@@ -175,5 +175,17 @@ class EngagementDatabase(object):
         if commit_before_returning:
             transaction.commit()
 
+    def set_history_entry(self, history_entry, transaction=None):
+        if transaction is None:
+            self._history_entry_ref(history_entry.history_entry_id).set(history_entry.to_dict())
+        else:
+            transaction.set(
+                self._history_entry_ref(history_entry.history_entry_id),
+                history_entry.to_dict()
+            )
+
     def transaction(self):
         return self._client.transaction()
+
+    def batch(self):
+        return self._client.batch()
