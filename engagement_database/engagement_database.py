@@ -128,14 +128,15 @@ class EngagementDatabase(object):
         data = query.get(transaction=transaction)
         return [Message.from_dict(d.to_dict()) for d in data]
 
-    def set_message(self, message, origin, transaction=None):
+    def set_message(self, message, origin=None, transaction=None):
         """
         Sets a message in the database.
 
         :param message: Message to write to the database.
         :type message: engagement_database.data_models.Message
-        :param origin: Origin details for this update.
-        :type origin: engagement_database.data_models.HistoryEntryOrigin
+        :param origin: Origin details for this update or None.
+                       If None, sets message without setting history
+        :type origin: engagement_database.data_models.HistoryEntryOrigin | None
         :param transaction: Transaction to run this update in or None.
                             If None, writes immediately, otherwise adds the updates to a transaction that will need
                             to be explicitly committed elsewhere.
@@ -158,16 +159,48 @@ class EngagementDatabase(object):
             message.to_dict()
         )
 
-        # Log a history event for this update
-        history_entry = HistoryEntry(
-            update_path=self._message_ref(message.message_id).path,
-            origin=origin,
-            updated_doc=message,
-            timestamp=firestore.SERVER_TIMESTAMP
-        )
+        if origin:
+            # Log a history event for this update
+            history_entry = HistoryEntry(
+                update_path=self._message_ref(message.message_id).path,
+                origin=origin,
+                updated_doc=message,
+                timestamp=firestore.SERVER_TIMESTAMP
+            )
+            transaction.set(
+                self._history_entry_ref(history_entry.history_entry_id),
+                history_entry.to_dict()
+            )
+
+        if commit_before_returning:
+            transaction.commit()
+
+    def restore_message(self, message, transaction):
+        """
+        A reimplementation of set_message method that restores a message in the database.
+        it doesn't set a history event for this update and also doesn't set last updated timestamp
+
+        :param message: Message to write to the database.
+        :type message: engagement_database.data_models.Message
+        :param transaction: Transaction to run this update in or None.
+                            If None, writes immediately, otherwise adds the updates to a transaction that will need
+                            to be explicitly committed elsewhere.
+        :type transaction: google.cloud.firestore.Transaction | None
+        """
+        message = message.copy()
+
+        if transaction is None:
+            # If no transaction was given, run all the updates in a new batched-write transaction and flag that
+            # this transaction needs to be committed before returning from this function.
+            transaction = self._client.batch()
+            commit_before_returning = True
+        else:
+            commit_before_returning = False
+
+        # Set the message
         transaction.set(
-            self._history_entry_ref(history_entry.history_entry_id),
-            history_entry.to_dict()
+            self._message_ref(message.message_id),
+            message.to_dict()
         )
 
         if commit_before_returning:
