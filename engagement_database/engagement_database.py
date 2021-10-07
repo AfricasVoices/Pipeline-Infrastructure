@@ -184,8 +184,6 @@ class EngagementDatabase(object):
                             to be explicitly committed elsewhere.
         :type transaction: google.cloud.firestore.Transaction | None
         """
-        message = message.copy()
-
         if transaction is None:
             # If no transaction was given, run all the updates in a new batched-write transaction and flag that
             # this transaction needs to be committed before returning from this function.
