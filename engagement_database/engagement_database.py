@@ -176,7 +176,7 @@ class EngagementDatabase(object):
     def restore_message(self, message, transaction):
         """
         A reimplementation of set_message method that restores a message in the database.
-        it doesn't set a history event for this update and also doesn't set last updated timestamp
+        It doesn't set a history event for this update and also doesn't set last updated timestamp
 
         :param message: Message to write to the database.
         :type message: engagement_database.data_models.Message
