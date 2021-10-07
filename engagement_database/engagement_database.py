@@ -173,7 +173,7 @@ class EngagementDatabase(object):
         if commit_before_returning:
             transaction.commit()
 
-    def restore_message(self, message, transaction):
+    def restore_message(self, message, transaction=None):
         """
         A reimplementation of set_message method that restores a message in the database.
         It doesn't set a history event for this update and also doesn't set last updated timestamp
