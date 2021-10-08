@@ -67,9 +67,7 @@ class EngagementDatabase(object):
         query = firestore_query_filter(query)
         data = query.get(transaction=transaction)
 
-        # Deserialize all history entries as being for Messages.
-        # If we add any other data models that have history tracked, we may need to update this.
-        return [HistoryEntry.from_dict(d.to_dict(), doc_type=Message) for d in data]
+        return [HistoryEntry.from_dict(d.to_dict()) for d in data]
 
     def get_history_for_message(self, message_id, firestore_query_filter=lambda q: q, transaction=None):
         """
@@ -88,7 +86,7 @@ class EngagementDatabase(object):
         query = self._history_ref().where("update_path", "==", message_ref.path)
         query = firestore_query_filter(query)
         data = query.get(transaction=transaction)
-        return [HistoryEntry.from_dict(d.to_dict(), doc_type=Message) for d in data]
+        return [HistoryEntry.from_dict(d.to_dict()) for d in data]
 
     def get_message(self, message_id, transaction=None):
         """

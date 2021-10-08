@@ -47,6 +47,8 @@ class MessageOrigin:
 
 
 class Message:
+    DOC_TYPE = "message"
+
     def __init__(self, text, timestamp, participant_uuid, direction, channel_operator, status, dataset, labels,
                  origin, message_id=None, coda_id=None, last_updated=None, previous_datasets=None):
         """
@@ -185,7 +187,7 @@ class Message:
 
 
 class HistoryEntry(object):
-    def __init__(self, update_path, updated_doc, origin, timestamp, history_entry_id=None):
+    def __init__(self, update_path, updated_doc, origin, timestamp, history_entry_id=None, doc_type=None):
         """
         Represents an entry in the database's history, describing an update to one of the documents.
 
@@ -201,6 +203,9 @@ class HistoryEntry(object):
         :param history_entry_id: Id of this history entry. If None, an id will automatically be generated in the
                                  constructor.
         :type history_entry_id: str | None
+        :param doc_type: Type of the document this is recording history for.
+                         If None, attempts to read the doc_type from the `updated_doc`'s `DOC_TYPE` field.
+        :type doc_type: str | None
         """
         if history_entry_id is None:
             history_entry_id = str(uuid.uuid4())
@@ -210,6 +215,7 @@ class HistoryEntry(object):
         self.updated_doc = updated_doc
         self.origin = origin
         self.timestamp = timestamp
+        self.doc_type = updated_doc.DOC_TYPE
 
     def to_dict(self, serialize_datetimes_to_str=False):
         """
@@ -226,7 +232,8 @@ class HistoryEntry(object):
             "update_path": self.update_path,
             "updated_doc": self.updated_doc.to_dict(serialize_datetimes_to_str),
             "origin": self.origin.to_dict(),
-            "timestamp": self.timestamp
+            "timestamp": self.timestamp,
+            "doc_type": self.doc_type
         }
 
         if serialize_datetimes_to_str:
@@ -235,13 +242,10 @@ class HistoryEntry(object):
         return history_entry_dict
 
     @classmethod
-    def from_dict(cls, d, doc_type=None):
+    def from_dict(cls, d):
         """
         :param d: Dictionary to initialise from.
         :type d: dict
-        :param doc_type: Type to deserialize the updated_doc to e.g. `Message`. If None, returns the updated_doc in its
-                         serialized form.
-        :type doc_type: class with from_dict() method.
         :return: HistoryEntry instance
         :rtype: HistoryEntry
         """
@@ -249,12 +253,18 @@ class HistoryEntry(object):
         if type(timestamp) == str:
             timestamp = datetime.fromisoformat(timestamp)
 
+        if d["doc_type"] == Message.DOC_TYPE:
+            doc_class = Message
+        else:
+            raise ValueError(f"Unknown `doc_type` {d['doc_type']}")
+
         return HistoryEntry(
             history_entry_id=d["history_entry_id"],
             update_path=d["update_path"],
-            updated_doc=d["updated_doc"] if doc_type is None else doc_type.from_dict(d["updated_doc"]),
+            updated_doc=doc_class.from_dict(d["updated_doc"]),
             origin=HistoryEntryOrigin.from_dict(d["origin"]),
-            timestamp=timestamp
+            timestamp=timestamp,
+            doc_type=d["doc_type"]
         )
 
 
