@@ -173,5 +173,33 @@ class EngagementDatabase(object):
         if commit_before_returning:
             transaction.commit()
 
+    def restore_message(self, message, transaction=None):
+        """
+        Restores a message to the database without setting history.
+
+        :param message: Message to write to the database.
+        :type message: engagement_database.data_models.Message
+        :param transaction: Transaction to run this update in or None.
+                            If None, writes immediately, otherwise adds the updates to a transaction that will need
+                            to be explicitly committed elsewhere.
+        :type transaction: google.cloud.firestore.Transaction | None
+        """
+        if transaction is None:
+            # If no transaction was given, run all the updates in a new batched-write transaction and flag that
+            # this transaction needs to be committed before returning from this function.
+            transaction = self._client.batch()
+            commit_before_returning = True
+        else:
+            commit_before_returning = False
+
+        # Set the message
+        transaction.set(
+            self._message_ref(message.message_id),
+            message.to_dict()
+        )
+
+        if commit_before_returning:
+            transaction.commit()
+
     def transaction(self):
         return self._client.transaction()
