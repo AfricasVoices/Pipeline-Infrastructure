@@ -187,6 +187,8 @@ class Message:
 
 
 class HistoryEntry(object):
+    DOC_TYPE = "history_entry"
+
     def __init__(self, db_update_path, updated_doc, origin, timestamp, history_entry_id=None, doc_type=None):
         """
         Represents an entry in the database's history, describing an update to one of the documents.
