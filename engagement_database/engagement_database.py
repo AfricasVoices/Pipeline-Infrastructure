@@ -177,7 +177,7 @@ class EngagementDatabase(object):
             transaction.commit()
 
     def restore_doc(self, doc, path, transaction=None):
-        ref = DocumentReference(f"{self._database_path}/{path}")
+        ref = self._client.document(f"{self._database_path}/{path}")
         if transaction is None:
             ref.set(doc.to_dict())
         else:
