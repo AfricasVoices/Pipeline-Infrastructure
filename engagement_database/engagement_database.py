@@ -1,6 +1,7 @@
 import uuid
 
 from google.cloud import firestore
+from google.cloud.firestore_v1 import DocumentReference
 
 from engagement_database.data_models import Message, HistoryEntry
 from util.firestore_utils import make_firestore_client
@@ -176,10 +177,11 @@ class EngagementDatabase(object):
             transaction.commit()
 
     def restore_doc(self, doc, path, transaction=None):
+        ref = DocumentReference(f"{self._database_path}/{path}")
         if transaction is None:
-            self._database_ref().doc(path).set(doc.to_dict())
+            ref.set(doc.to_dict())
         else:
-            transaction.set(self._database_ref().doc(path), doc.to_dict())
+            transaction.set(ref, doc.to_dict())
 
     def restore_history_entry(self, history_entry, transaction=None):
         if transaction is None:
