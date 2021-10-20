@@ -38,8 +38,8 @@ class EngagementDatabase(object):
         return self._client.document(self._database_path)
 
     def _local_path_for_ref(self, ref):
-        assert ref.path.startswith(self._database_path)
-        return ref.path.replace(self._database_path, "")
+        assert ref.path.startswith(f"{self._database_path}/")
+        return ref.path.replace(f"{self._database_path}/", "")
 
     def _history_ref(self):
         return self._database_ref().collection("history")
