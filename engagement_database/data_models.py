@@ -187,12 +187,13 @@ class Message:
 
 
 class HistoryEntry(object):
-    def __init__(self, update_path, updated_doc, origin, timestamp, history_entry_id=None, doc_type=None):
+    def __init__(self, db_update_path, updated_doc, origin, timestamp, history_entry_id=None, doc_type=None):
         """
         Represents an entry in the database's history, describing an update to one of the documents.
 
-        :param update_path: Full path in Firestore to the document that was updated.
-        :type update_path: str
+        :param db_update_path: Path in Firestore to the document that was updated, relative to the engagement database
+                               root document.
+        :type db_update_path: str
         :param updated_doc: Snapshot of the updated document at the time the update was made.
                             The document object requires a `to_dict()` method so it can be serialized.
         :type updated_doc: dict | obj with to_dict() method.
@@ -211,7 +212,7 @@ class HistoryEntry(object):
             history_entry_id = str(uuid.uuid4())
 
         self.history_entry_id = history_entry_id
-        self.update_path = update_path
+        self.db_update_path = db_update_path
         self.updated_doc = updated_doc
         self.origin = origin
         self.timestamp = timestamp
@@ -229,7 +230,7 @@ class HistoryEntry(object):
        """
         history_entry_dict = {
             "history_entry_id": self.history_entry_id,
-            "update_path": self.update_path,
+            "db_update_path": self.db_update_path,
             "updated_doc": self.updated_doc.to_dict(serialize_datetimes_to_str),
             "origin": self.origin.to_dict(),
             "timestamp": self.timestamp,
@@ -260,7 +261,7 @@ class HistoryEntry(object):
 
         return HistoryEntry(
             history_entry_id=d["history_entry_id"],
-            update_path=d["update_path"],
+            db_update_path=d["db_update_path"],
             updated_doc=doc_class.from_dict(d["updated_doc"]),
             origin=HistoryEntryOrigin.from_dict(d["origin"]),
             timestamp=timestamp,
