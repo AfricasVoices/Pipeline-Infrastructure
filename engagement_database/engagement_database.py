@@ -177,9 +177,9 @@ class EngagementDatabase(object):
 
     def restore_doc(self, doc, path, transaction=None):
         if transaction is None:
-            self._database_ref().document(path).set(doc.to_dict())
+            self._database_ref().doc(path).set(doc.to_dict())
         else:
-            transaction.set(self._database_ref().document(path), doc.to_dict())
+            transaction.set(self._database_ref().doc(path), doc.to_dict())
 
     def restore_history_entry(self, history_entry, transaction=None):
         if transaction is None:
