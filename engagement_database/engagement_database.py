@@ -37,6 +37,10 @@ class EngagementDatabase(object):
     def _database_ref(self):
         return self._client.document(self._database_path)
 
+    def _local_path_for_ref(self, ref):
+        assert ref.path.startswith(f"{self._database_path}/")
+        return ref.path.replace(f"{self._database_path}/", "")
+
     def _history_ref(self):
         return self._database_ref().collection("history")
 
@@ -158,7 +162,7 @@ class EngagementDatabase(object):
 
         # Log a history event for this update
         history_entry = HistoryEntry(
-            update_path=self._message_ref(message.message_id).path,
+            db_update_path=self._local_path_for_ref(self._message_ref(message.message_id)),
             origin=origin,
             updated_doc=message,
             timestamp=firestore.SERVER_TIMESTAMP
