@@ -1,6 +1,7 @@
 import uuid
 
 from google.cloud import firestore
+from google.cloud.firestore_v1 import DocumentReference
 
 from engagement_database.data_models import Message, HistoryEntry
 from util.firestore_utils import make_firestore_client
@@ -175,33 +176,45 @@ class EngagementDatabase(object):
         if commit_before_returning:
             transaction.commit()
 
-    def restore_message(self, message, transaction=None):
+    def restore_doc(self, doc, path, transaction=None):
         """
-        Restores a message to the database without setting history.
+        Restores a document to the database without setting history.
 
-        :param message: Message to write to the database.
-        :type message: engagement_database.data_models.Message
+        :param doc: Document to write.
+        :type doc: any
+        :param path: Path to write the document to, relative to the the engagement database root document.
+        :type path: str
+        :param transaction: Transaction to run this update in or None.
+                            If None, writes immediately, otherwise adds the updates to a transaction that will need
+                            to be explicitly committed elsewhere.
+        :type transaction: google.cloud.firestore.Transaction | None
+        """
+        ref = self._client.document(f"{self._database_path}/{path}")
+        if transaction is None:
+            ref.set(doc.to_dict())
+        else:
+            transaction.set(ref, doc.to_dict())
+
+    def restore_history_entry(self, history_entry, transaction=None):
+        """
+        Restores a history entry to the database.
+
+        Restores the history entry only, and not the doc it records history for.
+
+        :param history_entry: History entry to restore.
+        :type history_entry: engagement_database.data_models.HistoryEntry
         :param transaction: Transaction to run this update in or None.
                             If None, writes immediately, otherwise adds the updates to a transaction that will need
                             to be explicitly committed elsewhere.
         :type transaction: google.cloud.firestore.Transaction | None
         """
         if transaction is None:
-            # If no transaction was given, run all the updates in a new batched-write transaction and flag that
-            # this transaction needs to be committed before returning from this function.
-            transaction = self._client.batch()
-            commit_before_returning = True
+            self._history_entry_ref(history_entry.history_entry_id).set(history_entry.to_dict())
         else:
-            commit_before_returning = False
+            transaction.set(self._history_entry_ref(history_entry.history_entry_id), history_entry.to_dict())
 
-        # Set the message
-        transaction.set(
-            self._message_ref(message.message_id),
-            message.to_dict()
-        )
-
-        if commit_before_returning:
-            transaction.commit()
+    def batch(self):
+        return self._client.batch()
 
     def transaction(self):
         return self._client.transaction()
