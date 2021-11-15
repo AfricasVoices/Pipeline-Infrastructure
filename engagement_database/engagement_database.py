@@ -195,6 +195,26 @@ class EngagementDatabase(object):
         else:
             transaction.set(ref, doc.to_dict())
 
+    def delete_doc(self, path, transaction=None):
+        """
+        Deletes a doc from the database.
+
+        CAUTION: If used without care, this can break history. To archive messages while correctly preserving history,
+        use `set_message` instead.
+
+        :param path: Path to the document to delete, relative to the the engagement database root document.
+        :type path: str
+        :param transaction: Transaction to run this update in or None.
+                            If None, writes immediately, otherwise adds the updates to a transaction that will need
+                            to be explicitly committed elsewhere.
+        :type transaction: google.cloud.firestore.Transaction | None
+        """
+        ref = self._client.document(f"{self._database_path}/{path}")
+        if transaction is None:
+            ref.delete()
+        else:
+            transaction.delete(ref)
+
     def restore_history_entry(self, history_entry, transaction=None):
         """
         Restores a history entry to the database.
