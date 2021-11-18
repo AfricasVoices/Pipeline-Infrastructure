@@ -24,25 +24,30 @@ class MessageDirections(object):
 
 
 class MessageOrigin:
-    def __init__(self, origin_id):
+    def __init__(self, origin_id, origin_type):
         """
         Represents a message's origin.
 
         :param origin_id: Unique identifier for this message in the origin dataset.
                           The same message in the origin dataset should always be assigned the same id.
         :type origin_id: str
+        :param origin_type: Origin type e.g. "rapid_pro", "recovery_csv"
+        :type origin_type: str
         """
         self.origin_id = origin_id
+        self.origin_type = origin_type
 
     def to_dict(self):
         return {
-            "origin_id": self.origin_id
+            "origin_id": self.origin_id,
+            "origin_type": self.origin_type
         }
 
     @classmethod
     def from_dict(cls, d):
         return MessageOrigin(
-            d["origin_id"]
+            d["origin_id"],
+            d["origin_type"]
         )
 
 
