@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PipelineInfrastructure",
-    version="0.1.1",
+    version="0.1.2",
     python_requires='>=3.6.0',
     url="https://github.com/AfricasVoices/Pipeline-Infrastructure",
     packages=find_packages(exclude=("test",)),
