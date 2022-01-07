@@ -34,7 +34,7 @@ def _normalise_and_validate_contact_urn(contact_urn):
 
     return contact_urn
 
-def init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url, firebase_table_name):
+def _init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url, firebase_table_name):
 
     log.info("Initialising uuid table client...")
     credentials = json.loads(google_cloud_utils.download_blob_to_string(
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     log.info("Downloading Firestore UUID Table credentials...")
 
-    participants_uuid_table = init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url,
+    participants_uuid_table = _init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url,
                                                      firebase_table_name)
 
     log.info(f"Loading csv from '{csv_input_path}'...")
@@ -90,9 +90,9 @@ if __name__ == "__main__":
         row[column_to_de_identify] = _normalise_and_validate_contact_urn(row[column_to_de_identify])
 
     log.info(f"De-identifying column '{column_to_de_identify}'...")
-    phone_numbers = [row[column_to_de_identify] for row in raw_data]
+    urns = [row[column_to_de_identify] for row in raw_data]
 
-    participant_to_uuid_lut = participants_uuid_table.data_to_uuid_batch(phone_numbers)
+    participant_to_uuid_lut = participants_uuid_table.data_to_uuid_batch(urns)
     for row in raw_data:
         row[column_to_de_identify] = participant_to_uuid_lut[row[column_to_de_identify]]
 
