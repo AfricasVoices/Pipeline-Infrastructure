@@ -2,13 +2,37 @@ import argparse
 import csv
 import json
 
-from core_data_modules.cleaners import PhoneCleaner
 from core_data_modules.logging import Logger
 from id_infrastructure.firestore_uuid_table import FirestoreUuidTable
 from storage.google_cloud import google_cloud_utils
 
 log = Logger(__name__)
 
+
+# Todo move to core
+def _normalise_and_validate_contact_urn(contact_urn):
+    """
+    Normalises and validates the given URN.
+
+    Fails with an AssertionError if the given URN is invalid.
+
+    :param contact_urn: URN to de-identify.
+    :type contact_urn: str
+    :return: Normalised contact urn.
+    :rtype: str
+    """
+    if contact_urn.startswith("tel:"):
+        # TODO: This is known to fail for golis numbers via Shaqodoon. Leaving as a fail-safe for now
+        #       until we're ready to test with golis numbers.
+        assert contact_urn.startswith("tel:+")
+
+    if contact_urn.startswith("telegram:"):
+        # Sometimes a telegram urn ends with an optional #<username> e.g. telegram:123456#testuser
+        # To ensure we always get the same urn for the same telegram user, normalise telegram urns to exclude
+        # this #<username>
+        contact_urn = contact_urn.split("#")[0]
+
+    return contact_urn
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="De-identifies a CSV by converting the phone numbers in "
@@ -44,10 +68,10 @@ if __name__ == "__main__":
         firebase_credentials_file_url
     ))
 
-    phone_number_uuid_table = FirestoreUuidTable(
+    participant_uuid_table = FirestoreUuidTable(
         firebase_table_name,
         firestore_uuid_table_credentials,
-        "avf-phone-uuid-"
+        "avf-participant-uuid-"
     )
     log.info("Initialised the Firestore UUID table")
 
@@ -58,14 +82,14 @@ if __name__ == "__main__":
 
     log.info(f"Normalising phone numbers in column '{column_to_de_identify}'...")
     for row in raw_data:
-        row[column_to_de_identify] = PhoneCleaner.normalise_phone(row[column_to_de_identify])
+        row[column_to_de_identify] = _normalise_and_validate_contact_urn(row[column_to_de_identify])
 
     log.info(f"De-identifying column '{column_to_de_identify}'...")
     phone_numbers = [row[column_to_de_identify] for row in raw_data]
 
-    phone_to_uuid_lut = phone_number_uuid_table.data_to_uuid_batch(phone_numbers)
+    participant_to_uuid_lut = participant_uuid_table.data_to_uuid_batch(phone_numbers)
     for row in raw_data:
-        row[column_to_de_identify] = phone_to_uuid_lut[row[column_to_de_identify]]
+        row[column_to_de_identify] = participant_to_uuid_lut[row[column_to_de_identify]]
 
     log.info(f"Exporting {len(raw_data)} de-identified rows to {de_identified_csv_output_path}...")
     with open(de_identified_csv_output_path, "w") as f:
