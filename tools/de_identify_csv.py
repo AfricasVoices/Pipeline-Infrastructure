@@ -34,6 +34,19 @@ def _normalise_and_validate_contact_urn(contact_urn):
 
     return contact_urn
 
+def init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url, firebase_table_name):
+
+    log.info("Initialising uuid table client...")
+    credentials = json.loads(google_cloud_utils.download_blob_to_string(
+        google_cloud_credentials_file_path, firebase_credentials_file_url
+    ))
+
+    uuid_table = FirestoreUuidTable.init_from_credentials(credentials, firebase_table_name, "avf-participant-uuid-")
+    log.info(f"Initialised {firebase_table_name} uuid table client")
+
+    return uuid_table
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="De-identifies a CSV by converting the phone numbers in "
                                                  "the specified column to avf phone ids")
@@ -49,7 +62,7 @@ if __name__ == "__main__":
     parser.add_argument("firebase_table_name", metavar="firebase-table-name",
                         help="Name of the data <-> uuid table in Firebase to use.")
     parser.add_argument("column_to_de_identify", metavar="column-to-de-identify",
-                        help="Name of the column containing phone numbers to be de-identified")
+                        help="Name of the column containing participants URNs to be de-identified")
     parser.add_argument("de_identified_csv_output_path", metavar="de-identified-csv-output-path",
                         help="Path to write the de-identified CSV to")
 
@@ -63,17 +76,9 @@ if __name__ == "__main__":
     de_identified_csv_output_path = args.de_identified_csv_output_path
 
     log.info("Downloading Firestore UUID Table credentials...")
-    firestore_uuid_table_credentials = json.loads(google_cloud_utils.download_blob_to_string(
-        google_cloud_credentials_file_path,
-        firebase_credentials_file_url
-    ))
 
-    participant_uuid_table = FirestoreUuidTable(
-        firebase_table_name,
-        firestore_uuid_table_credentials,
-        "avf-participant-uuid-"
-    )
-    log.info("Initialised the Firestore UUID table")
+    participants_uuid_table = init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url,
+                                                     firebase_table_name)
 
     log.info(f"Loading csv from '{csv_input_path}'...")
     with open(csv_input_path, "r", encoding='utf-8-sig') as f:
@@ -87,7 +92,7 @@ if __name__ == "__main__":
     log.info(f"De-identifying column '{column_to_de_identify}'...")
     phone_numbers = [row[column_to_de_identify] for row in raw_data]
 
-    participant_to_uuid_lut = participant_uuid_table.data_to_uuid_batch(phone_numbers)
+    participant_to_uuid_lut = participants_uuid_table.data_to_uuid_batch(phone_numbers)
     for row in raw_data:
         row[column_to_de_identify] = participant_to_uuid_lut[row[column_to_de_identify]]
 
