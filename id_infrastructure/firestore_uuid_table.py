@@ -258,11 +258,21 @@ class FirestoreUuidTable(object):
         :return: Dictionary of data -> uuid
         :rtype: dict
         """
-        mappings_ref = self._mappings_ref()
-        query = firestore_query_filter(mappings_ref)
-
+        query = firestore_query_filter(self._mappings_ref())
         return {mapping.id: mapping.get(_UUID_KEY_NAME) for mapping in query.get()}
 
     @staticmethod
     def generate_new_uuid(prefix):
         return prefix + str(uuid.uuid4())
+
+    def delete_mappings(self, mappings):
+        """
+        Deletes the mappings specified.
+
+        :param mappings: Dictionary of data -> uuid
+        :type mappings: dict
+        """
+        for mapping_id in mappings.keys():
+            self._mappings_ref().document(mapping_id).delete()
+        
+        log.info(f"Deleted {len(mappings)} mappings")
