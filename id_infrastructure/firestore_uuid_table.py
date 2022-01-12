@@ -257,7 +257,7 @@ class FirestoreUuidTable(object):
         """
         mappings_ref = self._client.collection(f"tables/{self._table_name}/mappings")
         query = firestore_query_filter(mappings_ref)
-        
+
         return {mapping.id: mapping.get(_UUID_KEY_NAME) for mapping in query.get()}
 
     @staticmethod
