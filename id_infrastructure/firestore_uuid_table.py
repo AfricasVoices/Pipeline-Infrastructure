@@ -85,6 +85,9 @@ class FirestoreUuidTable(object):
         """
         return cls(make_firestore_client(cert, app_name), table_name, uuid_prefix)
 
+    def _mappings_ref(self):
+        return self._client.collection(f"tables/{self._table_name}/mappings")
+
     def data_to_uuid_batch(self, list_of_data_requested):
         # Serve the request from the cache if possible, saving network request time + Firestore read costs
         list_of_data_requested = set(list_of_data_requested)
@@ -99,7 +102,7 @@ class FirestoreUuidTable(object):
         if len(self._mappings_cache) == 0:
             log.info(f"Sourcing uuids for {len(list_of_data_requested)} data items from Firestore...")
             existing_mappings = dict()
-            for mapping in self._client.collection(f"tables/{self._table_name}/mappings").get():
+            for mapping in self._mappings_ref().get():
                 existing_mappings[mapping.id] = mapping.get(_UUID_KEY_NAME)
         else:
             log.info(f"Sourcing uuids for {len(list_of_data_requested)} data items from cache...")
@@ -197,7 +200,7 @@ class FirestoreUuidTable(object):
     def uuid_to_data(self, uuid_to_lookup):
         # Search for the UUID
         # return the data or fail
-        uuid_col_ref = self._client.collection(f"tables/{self._table_name}/mappings")
+        uuid_col_ref = self._mappings_ref()
 
         # Create a query against the collection
         query_ref = uuid_col_ref.where(_UUID_KEY_NAME, u"==", uuid_to_lookup)
@@ -220,7 +223,7 @@ class FirestoreUuidTable(object):
         # Return a mapping data for the uuids that were in the collection
         log.info(f"Looking up the data for {len(uuids_to_lookup)} uuids from Firestore...")
         reverse_mappings = dict()
-        for mapping in self._client.collection(f"tables/{self._table_name}/mappings").get():
+        for mapping in self._mappings_ref().get():
             self._mappings_cache[mapping.id] = mapping.get(_UUID_KEY_NAME)
             reverse_mappings[mapping.get(_UUID_KEY_NAME)] = mapping.id
         
@@ -242,7 +245,7 @@ class FirestoreUuidTable(object):
         :rtype: dict
         """
         self._mappings_cache = {}
-        for mapping in self._client.collection(f"tables/{self._table_name}/mappings").get():
+        for mapping in self._mappings_ref().get():
             self._mappings_cache[mapping.id] = mapping.get(_UUID_KEY_NAME)
         return self._mappings_cache.copy()
 
@@ -255,7 +258,7 @@ class FirestoreUuidTable(object):
         :return: Dictionary of data -> uuid
         :rtype: dict
         """
-        mappings_ref = self._client.collection(f"tables/{self._table_name}/mappings")
+        mappings_ref = self._mappings_ref()
         query = firestore_query_filter(mappings_ref)
 
         return {mapping.id: mapping.get(_UUID_KEY_NAME) for mapping in query.get()}
