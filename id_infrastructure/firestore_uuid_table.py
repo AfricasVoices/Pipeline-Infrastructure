@@ -263,4 +263,4 @@ class FirestoreUuidTable(object):
         for mapping_id in mappings.keys():
             self._mappings_ref().document(mapping_id).delete()
         
-        log.info(f"Deleted {len(mappings)} mappings")
+        log.info(f"Deleted {len(mappings)} mapping(s)")

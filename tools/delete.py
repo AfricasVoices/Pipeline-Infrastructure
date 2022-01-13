@@ -129,7 +129,6 @@ if __name__ == "__main__":
         exit(0)
 
     participants_uuid_table.delete_mappings(filtered_mappings)
-    log.info(f"Deleted {len(filtered_mappings)} mapping(s)")
 
     urns = list(filtered_mappings.keys())
     print(json.dumps(urns, indent=2))
