@@ -82,8 +82,6 @@ if __name__ == "__main__":
     substring = args.contains
     suffix = args.endswith
 
-    proceed = query_yes_no("Are you sure you want to proceed with deletion?")
-
     log.info("Downloading Firestore UUID Table credentials...")
     participants_uuid_table = init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url,
                                                      firebase_table_name)
