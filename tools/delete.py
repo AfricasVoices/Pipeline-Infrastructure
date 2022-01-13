@@ -78,6 +78,7 @@ if __name__ == "__main__":
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
     firebase_credentials_file_url = args.firebase_credentials_file_url
     firebase_table_name = args.firebase_table_name
+    
     prefix = args.startswith
     substring = args.contains
     suffix = args.endswith
