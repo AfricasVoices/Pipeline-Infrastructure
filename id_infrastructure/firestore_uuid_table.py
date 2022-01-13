@@ -249,18 +249,6 @@ class FirestoreUuidTable(object):
             self._mappings_cache[mapping.id] = mapping.get(_UUID_KEY_NAME)
         return self._mappings_cache.copy()
 
-    def get_mappings(self, firestore_query_filter=lambda q: q):
-        """
-        Returns the mappings currently in this table.
-
-        :param firestore_query_filter: Filter to apply to the underlying Firestore query.
-        :type firestore_query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
-        :return: Dictionary of data -> uuid
-        :rtype: dict
-        """
-        query = firestore_query_filter(self._mappings_ref())
-        return {mapping.id: mapping.get(_UUID_KEY_NAME) for mapping in query.get()}
-
     @staticmethod
     def generate_new_uuid(prefix):
         return prefix + str(uuid.uuid4())
