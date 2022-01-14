@@ -1,6 +1,6 @@
-import sys
 import argparse
 import json
+import sys
 
 from core_data_modules.logging import Logger
 from id_infrastructure.firestore_uuid_table import FirestoreUuidTable
