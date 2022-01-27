@@ -123,7 +123,7 @@ if __name__ == "__main__":
     for i, k in zip(range(limit), filtered_mappings.keys()):
         log.info(f"{k}")
 
-    proceed = query_yes_no("Are you sure you want to proceed with deletion?")
+    proceed = _query_yes_no("Are you sure you want to proceed with deletion?")
     if not proceed:
         log.info("Skipping deletion of mappings ...")
         exit(0)
