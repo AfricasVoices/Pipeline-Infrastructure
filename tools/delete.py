@@ -7,7 +7,7 @@ from id_infrastructure.firestore_uuid_table import FirestoreUuidTable
 from storage.google_cloud import google_cloud_utils
 
 
-def query_yes_no(question, default="yes"):
+def _query_yes_no(question, default="yes"):
     """Asks a yes/no question via input() and returns user input.
     """
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
