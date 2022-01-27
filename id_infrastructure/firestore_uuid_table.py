@@ -258,7 +258,7 @@ class FirestoreUuidTable(object):
         Deletes the mappings specified.
 
         :param mappings: Dictionary of data -> uuid
-        :type mappings: dict
+        :type mappings: dict of str -> str
         """
         for mapping_id in mappings.keys():
             self._mappings_ref().document(mapping_id).delete()
