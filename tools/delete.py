@@ -119,9 +119,8 @@ if __name__ == "__main__":
         
     log.warning(f"Deleting {len(filtered_mappings)} mapping(s) that {concat_description(firestore_filter_desc)}")
     log.info("See sample data below ...")
-    limit = 5 if len(filtered_mappings) > 5 else len(filtered_mappings)
-    for i, k in zip(range(limit), filtered_mappings.keys()):
-        log.info(f"{k}")
+    for key in filtered_mappings.keys():
+        log.info(key)
 
     proceed = _query_yes_no("Are you sure you want to proceed with deletion?")
     if not proceed:
@@ -129,6 +128,3 @@ if __name__ == "__main__":
         exit(0)
 
     participants_uuid_table.delete_mappings(filtered_mappings)
-
-    urns = list(filtered_mappings.keys())
-    print(json.dumps(urns, indent=2))
