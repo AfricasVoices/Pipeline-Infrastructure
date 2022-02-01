@@ -8,28 +8,19 @@ from id_infrastructure.firestore_uuid_table import FirestoreUuidTable
 from storage.google_cloud import google_cloud_utils
 
 
-def _query_yes_no(question, default="yes"):
-    """Asks a yes/no question via input() and returns user input.
+def _query_yes_no(question):
+    """Asks a yes/no question via input() and returns True if yes, False if no.
     """
-    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
-    if default is None:
-        prompt = " [y/n] "
-    elif default == "yes":
-        prompt = " [Y/n] "
-    elif default == "no":
-        prompt = " [y/N] "
-    else:
-        raise ValueError(f"invalid default answer: {default}")
+    valid_choices = {"y": True, "n": False}
 
     while True:
-        sys.stdout.write(question + prompt)
-        choice = input().lower()
-        if choice == "" and default is not None:
-            return valid[default]
-        elif choice in valid:
-            return True
-        else:
-            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+        sys.stdout.write(f"{question} (y/n): ")
+        user_input = input().lower()
+        if user_input not in valid_choices:
+            sys.stdout.write("Please respond with 'y' or 'n').\n")
+            continue
+
+        return valid_choices[user_input]
 
 
 def concat_description(desc_list):
