@@ -59,7 +59,6 @@ log = Logger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Deletes mappings from Firestore")
-    parser.add_argument("regexp", help="A regular expression to be matched when searching for mapping(s) you want to be deleted.")
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
@@ -68,6 +67,8 @@ if __name__ == "__main__":
                              "number <-> uuid table is stored.")
     parser.add_argument("firebase_table_name", metavar="firebase-table-name",
                         help="Name of the data <-> uuid table in Firebase to use.")
+    parser.add_argument("regexp", type=str,
+                        help="A regular expression to be matched when searching for mapping(s) you want to be deleted.")
 
     args = parser.parse_args()
 
