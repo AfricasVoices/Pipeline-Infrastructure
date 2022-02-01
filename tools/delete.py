@@ -53,10 +53,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    pattern = re.compile(args.regexp)
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
     firebase_credentials_file_url = args.firebase_credentials_file_url
     firebase_table_name = args.firebase_table_name
+    pattern = re.compile(args.regexp)
 
     log.info("Downloading Firestore UUID Table credentials...")
     participants_uuid_table = init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url,
