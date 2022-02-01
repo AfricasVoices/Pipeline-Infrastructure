@@ -1,5 +1,6 @@
 import argparse
 import json
+import re
 import sys
 
 from core_data_modules.logging import Logger
@@ -57,13 +58,8 @@ log = Logger(__name__)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Deletes data from Firestore")
-    parser.add_argument("--startswith", metavar="startswith",
-                        help="Enter prefix to be searched for in the data")
-    parser.add_argument("--contains", metavar="contains",
-                        help="Enter substring to be searched for in the data")
-    parser.add_argument("--endswith", metavar="endswith",
-                        help="Enter suffix to be searched for in the data")
+    parser = argparse.ArgumentParser(description="Deletes mappings from Firestore")
+    parser.add_argument("regexp", help="A regular expression to be matched when searching for mapping(s) you want to be deleted.")
     parser.add_argument("google_cloud_credentials_file_path", metavar="google-cloud-credentials-file-path",
                         help="Path to a Google Cloud service account credentials file to use to access the "
                              "credentials bucket")
@@ -75,56 +71,25 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    pattern = re.compile(args.regexp)
     google_cloud_credentials_file_path = args.google_cloud_credentials_file_path
     firebase_credentials_file_url = args.firebase_credentials_file_url
     firebase_table_name = args.firebase_table_name
-    
-    prefix = args.startswith
-    substring = args.contains
-    suffix = args.endswith
 
     log.info("Downloading Firestore UUID Table credentials...")
     participants_uuid_table = init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url,
                                                      firebase_table_name)
-
-    filter_by_prefix = lambda q: q[0].startswith(prefix)
-    filter_by_substring = lambda q: substring in q[0]
-    filter_by_suffix = lambda q: q[0].endswith(suffix)
-
-    firestore_filters = []
-    firestore_filter_desc = []
-
-    if prefix:
-        firestore_filters.append(filter_by_prefix)
-        firestore_filter_desc.append(f"start with {prefix}")
-
-    if substring:
-        firestore_filters.append(filter_by_substring)
-        firestore_filter_desc.append(f"contain {substring}")
-
-    if suffix:
-        firestore_filters.append(filter_by_suffix)
-        firestore_filter_desc.append(f"end with {suffix}")
-
-    if len(firestore_filters) == 0:
-        log.info("Filter mechanism not specified, skipping...")
-        exit(0)
         
     mappings = participants_uuid_table.get_all_mappings()
-    filtered_mappings = dict(filter( lambda x: all(f(x) for f in firestore_filters), mappings.items())) # As soon as a single filter returns False, that map element won't be included.
-
-    if not filtered_mappings:
-        log.info("No mappings to be deleted")
-        exit(0)
+    mappings_found = {k:v for (k,v) in mappings.items() if pattern.search(k)}
         
-    log.warning(f"Deleting {len(filtered_mappings)} mapping(s) that {concat_description(firestore_filter_desc)}")
-    log.info("See sample data below ...")
-    for key in filtered_mappings.keys():
+    log.info(f"Listing mapping(s) to be deleted:")
+    for key in mappings_found.keys():
         log.info(key)
-
-    proceed = _query_yes_no("Are you sure you want to proceed with deletion?")
-    if not proceed:
-        log.info("Skipping deletion of mappings ...")
+    
+    log.info(f"{len(mappings_found)} mapping(s) to be deleted")
+    if not _query_yes_no("Are you sure you want to proceed with deletion?"):
+        log.info("Skipping deletion...")
         exit(0)
 
     participants_uuid_table.delete_mappings(filtered_mappings)
