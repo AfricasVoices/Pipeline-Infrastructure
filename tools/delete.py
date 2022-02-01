@@ -1,3 +1,4 @@
+# TODO: Move this script to the tools repository.
 import argparse
 import json
 import re
