@@ -23,16 +23,6 @@ def _query_yes_no(question):
         return valid_choices[user_input]
 
 
-def concat_description(desc_list):
-    if len(desc_list) == 0:
-        return ''
-    if len(desc_list) == 1:
-        return desc_list[0]
-    if len(desc_list) == 2:
-        return desc_list[0] + ' and ' + desc_list[1]
-    return ', '.join(desc_list[:-1]) + ', and ' + desc_list[-1]
-
-
 def init_uuid_table_client(google_cloud_credentials_file_path, firebase_credentials_file_url, firebase_table_name):
     log.info("Initialising uuid table client...")
     credentials = json.loads(google_cloud_utils.download_blob_to_string(
