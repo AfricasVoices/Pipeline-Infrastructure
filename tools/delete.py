@@ -64,6 +64,10 @@ if __name__ == "__main__":
         
     mappings = participants_uuid_table.get_all_mappings()
     mappings_found = {k:v for (k,v) in mappings.items() if pattern.search(k)}
+
+    if not mappings_found:
+        log.info("No mappings found that match the regexp")
+        exit(0)
         
     log.info(f"Listing mapping(s) to be deleted:")
     for key in mappings_found.keys():
@@ -74,4 +78,4 @@ if __name__ == "__main__":
         log.info("Skipping deletion...")
         exit(0)
 
-    participants_uuid_table.delete_mappings(filtered_mappings)
+    delete_mappings(participants_uuid_table, mappings_found, pattern)
