@@ -273,4 +273,4 @@ class FirestoreUuidTable(object):
             assert regexp.search(mapping_id), f"Mapping id `{mapping_id}` does not match regular expression."
             mapping_ref.delete()
         
-        log.info(f"Deleted {len(mappings)} mapping(s)")
+        log.info(f"Deleted {len(mappings)} mapping(s) and skipped n mappings that didn't exist")
