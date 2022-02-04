@@ -269,6 +269,7 @@ class FirestoreUuidTable(object):
             if not firestore_mapping.exists:
                 skipped_mappings += 1
                 log.warning(f"Mapping id `{mapping_id}` does not exist. skipping...")
+                continue
 
             assert mappings[mapping_id] == firestore_mapping.get(_UUID_KEY_NAME)
             mapping_ref.delete()
