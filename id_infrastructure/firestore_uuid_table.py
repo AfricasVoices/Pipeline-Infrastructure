@@ -253,24 +253,24 @@ class FirestoreUuidTable(object):
     def generate_new_uuid(prefix):
         return prefix + str(uuid.uuid4())
 
-    def delete_mappings(self, mappings, regexp):
+    def delete_mappings(self, mappings):
         """
         Deletes the mappings specified.
 
         :param mappings: Dictionary of data -> uuid
         :type mappings: dict of str -> str
-        :param regexp: Regular expression object.
-        :type regexp: re.Pattern
         """
+        skipped_mappings = 0
         for mapping_id in mappings.keys():
             log.warning(f"Deleting mapping id `{mapping_id}`...")
             mapping_ref = self._mappings_ref().document(mapping_id)
             
-            mapping = mapping_ref.get()
-            if not mapping.exists:
+            firestore_mapping = mapping_ref.get()
+            if not firestore_mapping.exists:
+                skipped_mappings += 1
                 log.warning(f"Mapping id `{mapping_id}` does not exist. skipping...")
 
-            assert regexp.search(mapping_id), f"Mapping id `{mapping_id}` does not match regular expression."
+            assert mappings[mapping_id] == firestore_mapping.get(_UUID_KEY_NAME)
             mapping_ref.delete()
         
-        log.info(f"Deleted {len(mappings)} mapping(s) and skipped n mappings that didn't exist")
+        log.info(f"Deleted {len(mappings)} mapping(s) and skipped {skipped_mappings} mapping(s) that didn't exist")
