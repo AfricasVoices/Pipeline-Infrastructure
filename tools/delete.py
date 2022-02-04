@@ -63,7 +63,7 @@ if __name__ == "__main__":
                                                      firebase_table_name)
         
     mappings = participants_uuid_table.get_all_mappings()
-    mappings_found = {k:v for (k,v) in mappings.items() if pattern.search(k)}
+    mappings_matching_regex = {k:v for (k, v) in mappings.items() if pattern.search(k)}
 
     if not mappings_found:
         log.info("No mappings found that match the regexp")
