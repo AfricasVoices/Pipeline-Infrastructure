@@ -78,4 +78,5 @@ if __name__ == "__main__":
         log.info("Skipping deletion...")
         exit(0)
 
+    log.warning(f"Deleting {len(mappings_matching_regex)} mapping(s)")
     delete_mappings(participants_uuid_table, mappings_matching_regex)
