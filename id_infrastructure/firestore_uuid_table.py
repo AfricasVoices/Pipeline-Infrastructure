@@ -274,4 +274,5 @@ class FirestoreUuidTable(object):
             assert mappings[mapping_id] == firestore_mapping.get(_UUID_KEY_NAME)
             mapping_ref.delete()
         
-        log.info(f"Deleted {len(mappings)} mapping(s) and skipped {skipped_mappings} mapping(s) that didn't exist")
+        deleted_mappings = len(mappings) - skipped_mappings
+        log.info(f"Deleted {deleted_mappings} mapping(s) and skipped {skipped_mappings} mapping(s) that didn't exist")
