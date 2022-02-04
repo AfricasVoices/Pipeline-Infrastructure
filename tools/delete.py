@@ -66,7 +66,7 @@ if __name__ == "__main__":
     mappings_matching_regex = {k:v for (k, v) in mappings.items() if pattern.search(k)}
 
     if len(mappings_matching_regex) == 0:
-        log.info("No mappings found that match the regexp")
+        log.info("No mappings found that match the regular expression")
         exit(0)
         
     log.info(f"Listing mapping(s) to be deleted:")
