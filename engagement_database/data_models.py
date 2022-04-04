@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime
 
@@ -345,6 +346,8 @@ class HistoryEntryOrigin(object):
         self.line = line
         self.details = details
 
+        self.validate_details()
+
     @classmethod
     def set_defaults(cls, user, project, pipeline, commit):
         """
@@ -366,6 +369,8 @@ class HistoryEntryOrigin(object):
         cls._default_commit = commit
 
     def to_dict(self):
+        self.validate_details()
+
         return {
             "origin_name": self.origin_name,
             "user": self.user,
@@ -387,3 +392,11 @@ class HistoryEntryOrigin(object):
             commit=d["commit"],
             line=d["line"]
         )
+
+    def validate_details(self):
+        """
+        Ensure the origin details consist of only primitives that can be easily serialised.
+
+        Raises an error if there is a problem, returns void otherwise.
+        """
+        json.dumps(self.details)
