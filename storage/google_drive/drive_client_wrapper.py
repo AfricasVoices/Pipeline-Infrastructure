@@ -310,10 +310,23 @@ def update_or_create(source_file_path, target_folder_path, target_file_name=None
 
 
 def get_storage_quota():
+    """
+    Gets the storage quota information for this account.
+
+    :return: Dictionary with keys "limit", "usage", "usageInDrive", and "usageInDriveTrash".
+    :rtype: dict of str -> str
+    """
     return _drive_service.about().get(fields="storageQuota").execute()["storageQuota"]
 
 
 def list_all_files_in_drive(file_properties=None):
+    """
+    :param file_properties: File properties to include in the returned data. If None, defaults to "name", "id",
+                            "ownedByMe", and "quotaBytesUsed".
+    :type file_properties: list of str
+    :return: List of all files in this account's drive, annotated with the requested properties.
+    :rtype: list of (dict of str -> str)
+    """
     if file_properties is None:
         file_properties = ["name", "id", "ownedByMe", "quotaBytesUsed"]
     fields = f"nextPageToken, files({','.join(file_properties)})"
