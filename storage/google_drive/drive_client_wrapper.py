@@ -319,28 +319,28 @@ def get_storage_quota():
     return _drive_service.about().get(fields="storageQuota").execute()["storageQuota"]
 
 
-def list_all_files_in_drive(file_properties=None):
+def list_all_objects_in_drive(object_properties=None):
     """
-    :param file_properties: File properties to include in the returned data. If None, defaults to "name", "id",
-                            "ownedByMe", and "quotaBytesUsed".
-    :type file_properties: list of str
-    :return: List of all files in this account's drive, annotated with the requested properties.
+    :param object_properties: Object properties to include in the returned data. If None, defaults to "name", "id",
+                              "ownedByMe", "mimeType", and "quotaBytesUsed".
+    :type object_properties: list of str
+    :return: List of all objects in this account's drive, annotated with the requested properties.
     :rtype: list of (dict of str -> str)
     """
-    if file_properties is None:
-        file_properties = ["name", "id", "ownedByMe", "quotaBytesUsed"]
-    fields = f"nextPageToken, files({','.join(file_properties)})"
+    if object_properties is None:
+        object_properties = ["name", "id", "ownedByMe", "mimeType", "quotaBytesUsed"]
+    fields = f"nextPageToken, files({','.join(object_properties)})"
 
-    all_files = []
+    all_objects = []
     page_results = _drive_service.files().list(spaces="drive", fields=fields).execute()
-    all_files.extend(page_results.get("files", []))
-    log.info(f"Fetched 1 page, {len(all_files)} total files")
+    all_objects.extend(page_results.get("files", []))
+    log.info(f"Fetched 1 page, {len(all_objects)} total objects")
     pages = 1
     while "nextPageToken" in page_results:
         page_results = _drive_service.files().list(
             spaces="drive", fields=fields, pageToken=page_results["nextPageToken"]).execute()
-        all_files.extend(page_results.get("files", []))
+        all_objects.extend(page_results.get("files", []))
         pages += 1
-        log.info(f"Fetched {pages} pages, {len(all_files)} total files")
+        log.info(f"Fetched {pages} pages, {len(all_objects)} total objects")
 
-    return all_files
+    return all_objects
