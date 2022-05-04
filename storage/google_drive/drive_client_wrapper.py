@@ -307,3 +307,23 @@ def update_or_create(source_file_path, target_folder_path, target_file_name=None
 
     _auto_retry(lambda: _create_file(source_file_path, target_folder_id, target_file_name),
                 max_retries, backoff_seconds)
+
+
+def get_storage_quota():
+    return _drive_service.about().get(fields="storageQuota").execute()["storageQuota"]
+
+
+def list_all_files_in_drive(file_properties=None):
+    if file_properties is None:
+        file_properties = ["name", "id", "ownedByMe", "quotaBytesUsed"]
+    fields = f"nextPageToken, files({','.join(file_properties)})"
+
+    all_files = []
+    page_results = _drive_service.files().list(spaces="drive", fields=fields).execute()
+    all_files.extend(page_results.get("files", []))
+    while page_results["nextPageToken"] is not None:
+        page_results = _drive_service.files().list(
+            spaces="drive", fields=fields, pageToken=page_results["nextPageToken"]).execute()
+        all_files.extend(page_results.get("files", []))
+
+    return all_files
