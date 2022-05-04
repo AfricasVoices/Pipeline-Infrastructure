@@ -321,9 +321,13 @@ def list_all_files_in_drive(file_properties=None):
     all_files = []
     page_results = _drive_service.files().list(spaces="drive", fields=fields).execute()
     all_files.extend(page_results.get("files", []))
+    log.info(f"Fetched 1 page, {len(all_files)} total files")
+    pages = 1
     while page_results["nextPageToken"] is not None:
         page_results = _drive_service.files().list(
             spaces="drive", fields=fields, pageToken=page_results["nextPageToken"]).execute()
         all_files.extend(page_results.get("files", []))
+        pages += 1
+        log.info(f"Fetched {pages} pages, {len(all_files)} total files")
 
     return all_files
