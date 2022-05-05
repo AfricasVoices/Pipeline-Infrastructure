@@ -323,7 +323,7 @@ def list_all_objects_in_drive(object_properties=None):
     """
     :param object_properties: Object properties to include in the returned data. If None, defaults to "name", "id",
                               "ownedByMe", "mimeType", and "quotaBytesUsed".
-    :type object_properties: list of str
+    :type object_properties: list of str | None
     :return: List of all objects in this account's drive, annotated with the requested properties.
     :rtype: list of (dict of str -> str)
     """
