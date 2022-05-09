@@ -307,3 +307,40 @@ def update_or_create(source_file_path, target_folder_path, target_file_name=None
 
     _auto_retry(lambda: _create_file(source_file_path, target_folder_id, target_file_name),
                 max_retries, backoff_seconds)
+
+
+def get_storage_quota():
+    """
+    Gets the storage quota information for this account.
+
+    :return: Dictionary with keys "limit", "usage", "usageInDrive", and "usageInDriveTrash".
+    :rtype: dict of str -> str
+    """
+    return _drive_service.about().get(fields="storageQuota").execute()["storageQuota"]
+
+
+def list_all_objects_in_drive(object_properties=None):
+    """
+    :param object_properties: Object properties to include in the returned data. If None, defaults to "name", "id",
+                              "ownedByMe", "mimeType", and "quotaBytesUsed".
+    :type object_properties: list of str | None
+    :return: List of all objects in this account's drive, annotated with the requested properties.
+    :rtype: list of (dict of str -> str)
+    """
+    if object_properties is None:
+        object_properties = ["name", "id", "ownedByMe", "mimeType", "quotaBytesUsed"]
+    fields = f"nextPageToken, files({','.join(object_properties)})"
+
+    all_objects = []
+    page_results = _drive_service.files().list(spaces="drive", fields=fields).execute()
+    all_objects.extend(page_results.get("files", []))
+    log.info(f"Fetched 1 page, {len(all_objects)} total objects")
+    pages = 1
+    while "nextPageToken" in page_results:
+        page_results = _drive_service.files().list(
+            spaces="drive", fields=fields, pageToken=page_results["nextPageToken"]).execute()
+        all_objects.extend(page_results.get("files", []))
+        pages += 1
+        log.info(f"Fetched {pages} pages, {len(all_objects)} total objects")
+
+    return all_objects
