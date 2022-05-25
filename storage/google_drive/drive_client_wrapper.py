@@ -344,3 +344,14 @@ def list_all_objects_in_drive(object_properties=None):
         log.info(f"Fetched {pages} pages, {len(all_objects)} total objects")
 
     return all_objects
+
+
+def delete_object(object_id):
+    """
+    Deletes the object with the given id from Drive. The file is deleted immediately, without going to Trash.
+
+    :param object_id: Drive object id of the object to delete.
+    :type object_id: str
+    """
+    log.warning(f"Deleting Google Drive object with id '{object_id}'...")
+    _drive_service.files().delete(fileId=object_id).execute()
