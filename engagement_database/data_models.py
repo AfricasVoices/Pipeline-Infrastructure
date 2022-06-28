@@ -29,9 +29,9 @@ class MessageOrigin:
         """
         Represents a message's origin.
 
-        :param origin_id: Unique identifier for this message in the origin dataset.
+        :param origin_id: Unique identifier for the message or messages in the origin dataset.
                           The same message in the origin dataset should always be assigned the same id.
-        :type origin_id: str
+        :type origin_id: str | list of str
         :param origin_type: Origin type e.g. "rapid_pro", "recovery_csv"
         :type origin_type: str
         """
