@@ -400,3 +400,32 @@ class HistoryEntryOrigin(object):
         Raises an error if there is a problem, returns void otherwise.
         """
         json.dumps(self.details)
+
+
+class CommandLogEntry:
+    DOC_TYPE = "command_log_entry"
+
+    def __init__(self, command, user, project, commit, line, command_log_entry_id=None):
+        if command_log_entry_id is None:
+            command_log_entry_id = str(uuid.uuid4())
+
+        self.command_log_entry_id = command_log_entry_id
+        self.command = command
+        self.user = user
+        self.project = project
+        self.commit = commit
+        self.line = line
+
+    def to_dict(self):
+        return {
+            "command_log_entry_id": self.command_log_entry_id,
+            "command": self.command,
+            "user": self.user,
+            "project": self.project,
+            "commit": self.commit,
+            "line": self.line
+        }
+
+    @classmethod
+    def from_dict(cls, d):
+        pass
