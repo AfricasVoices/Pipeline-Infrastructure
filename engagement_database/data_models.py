@@ -405,25 +405,20 @@ class HistoryEntryOrigin(object):
 class CommandLogEntry:
     DOC_TYPE = "command_log_entry"
 
-    def __init__(self, command, user, project, commit, line, command_log_entry_id=None):
+    def __init__(self, command, timestamp, origin, command_log_entry_id=None):
         if command_log_entry_id is None:
             command_log_entry_id = str(uuid.uuid4())
 
         self.command_log_entry_id = command_log_entry_id
         self.command = command
-        self.user = user
-        self.project = project
-        self.commit = commit
-        self.line = line
+        self.timestamp = timestamp
+        self.origin = origin
 
     def to_dict(self):
         return {
             "command_log_entry_id": self.command_log_entry_id,
             "command": self.command,
-            "user": self.user,
-            "project": self.project,
-            "commit": self.commit,
-            "line": self.line
+            "origin": self.origin.to_dict()
         }
 
     @classmethod
