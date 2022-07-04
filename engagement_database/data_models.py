@@ -1,4 +1,5 @@
 import json
+import sys
 import uuid
 from datetime import datetime
 
@@ -405,20 +406,70 @@ class HistoryEntryOrigin(object):
 class CommandLogEntry:
     DOC_TYPE = "command_log_entry"
 
-    def __init__(self, command, timestamp, origin, command_log_entry_id=None):
+    def __init__(self, status, command_log_entry_id=None, command=None, user=None, timestamp=None, project=None,
+                 commit=None, line=None):
+        """
+
+        :param status:
+        :type status: str
+        :param command:
+        :type command: list of str | None
+        :param user:
+        :type user: str | None
+        :param timestamp:
+        :type timestamp: datetime.datetime | None
+        :param project:
+        :type project: str | None
+        :param commit:
+        :type commit: str | None
+        :param line:
+        :type line: str | None
+        :param command_log_entry_id:
+        :type command_log_entry_id: str | None
+        """
         if command_log_entry_id is None:
             command_log_entry_id = str(uuid.uuid4())
 
+        if command is None:
+            command = sys.argv
+
+        if line is None:
+            line = Metadata.get_call_location(depth=1)
+
+        if user is None:
+            assert HistoryEntryOrigin._default_user is not None, \
+                "No default user set. Set one with HistoryEventOrigin.set_defaults"
+            user = HistoryEntryOrigin._default_user
+
+        if project is None:
+            assert HistoryEntryOrigin._default_project is not None, \
+                "No default project set. Set one with HistoryEventOrigin.set_defaults"
+            project = HistoryEntryOrigin._default_project
+
+        if commit is None:
+            assert HistoryEntryOrigin._default_commit is not None, \
+                "No default commit set. Set one with HistoryEventOrigin.set_defaults"
+            commit = HistoryEntryOrigin._default_commit
+
         self.command_log_entry_id = command_log_entry_id
         self.command = command
+        self.status = status
+        self.user = user
         self.timestamp = timestamp
-        self.origin = origin
+        self.project = project
+        self.commit = commit
+        self.line = line
 
     def to_dict(self):
         return {
             "command_log_entry_id": self.command_log_entry_id,
             "command": self.command,
-            "origin": self.origin.to_dict()
+            "status": self.status,
+            "user": self.user,
+            "timestamp": self.timestamp,
+            "project": self.project,
+            "commit": self.commit,
+            "line": self.line
         }
 
     @classmethod
