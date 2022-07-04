@@ -474,4 +474,16 @@ class CommandLogEntry:
 
     @classmethod
     def from_dict(cls, d):
-        pass
+        return CommandLogEntry(
+            command_log_entry_id=d["command_log_entry_id"],
+            command=d["command"],
+            status=d["status"],
+            user=d["user"],
+            timestamp=d["timestamp"],
+            project=d["project"],
+            commit=d["commit"],
+            line=d["line"]
+        )
+
+    def copy(self):
+        return self.from_dict(self.to_dict())
