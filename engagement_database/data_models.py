@@ -434,7 +434,7 @@ class CommandLogEntry:
             command = sys.argv
 
         if line is None:
-            line = Metadata.get_call_location(depth=1)
+            line = Metadata.get_call_location(depth=2)
 
         if user is None:
             assert HistoryEntryOrigin._default_user is not None, \
