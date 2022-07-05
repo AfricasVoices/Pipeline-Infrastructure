@@ -403,35 +403,59 @@ class HistoryEntryOrigin(object):
         json.dumps(self.details)
 
 
+class CommandStatus:
+    STARTED = "STARTED"
+    COMPLETED_SUCCESSFULLY = "COMPLETED_SUCCESSFULLY"
+
+
 class CommandLogEntry:
     DOC_TYPE = "command_log_entry"
+    _default_run_id = str(uuid.uuid4())
 
-    def __init__(self, status, command_log_entry_id=None, command=None, user=None, timestamp=None, project=None,
-                 commit=None, line=None):
+    def __init__(self, status, command_log_entry_id=None, command=None, run_id=None, user=None, timestamp=None,
+                 project=None, commit=None, line=None):
         """
 
-        :param status:
+        :param status: A `CommandStatus`. Commands should log when they start and when they finish, to help debugging
+                       database states caused by partially completed commands.
         :type status: str
-        :param command:
-        :type command: list of str | None
-        :param user:
-        :type user: str | None
-        :param timestamp:
-        :type timestamp: datetime.datetime | None
-        :param project:
-        :type project: str | None
-        :param commit:
-        :type commit: str | None
-        :param line:
-        :type line: str | None
-        :param command_log_entry_id:
+        :param command_log_entry_id: Id of this command log entry.
+                                     If None, a new id will be generated automatically.
         :type command_log_entry_id: str | None
+        :param command: The command that was run, in the parsed format that was passed to Python.
+                        If None, this will automatically be set to `sys.argv`.
+        :type command: list of str | None
+        :param run_id: Id of this run. All command log entries from the same run should share the same run id.
+                       If None, this will automatically assign a default run id that was generated when this script
+                       was initialised.
+        :type run_id: str | None
+         :param user: Id of the user who ran the program that created the update e.g. user@domain.com.
+                      If None, attempts to use the global default set by `HistoryEntryOrigin.set_defaults` if it exists,
+                      otherwise fails.
+        :type user: str | None
+        :param timestamp: Timestamp at which this log entry was created. If None, a server timestamp will be set at
+                          the next opportunity.
+        :type timestamp: datetime.datetime | None
+        :param project: Name of the project that created the update, ideally as the repository origin url.
+                        If None, attempts to use the global default set by `HistoryEntryOrigin.set_defaults` if it
+                        exists, otherwise fails.
+        :type project: str
+        :param commit: Id of the vcs commit for the version of code that created the update.
+                       If None, attempts to use the global default set by `HistoryEntryOrigin.set_defaults` if it
+                       exists, otherwise fails.
+        :type commit: str
+        :param line: Line of code that created the update. If None, automatically sets to the line that called this
+                     constructor.
+        :type line: str | None
         """
         if command_log_entry_id is None:
             command_log_entry_id = str(uuid.uuid4())
 
         if command is None:
             command = sys.argv
+
+        if run_id is None:
+            run_id = CommandLogEntry._default_run_id
 
         if line is None:
             line = Metadata.get_call_location(depth=2)
@@ -453,6 +477,7 @@ class CommandLogEntry:
 
         self.command_log_entry_id = command_log_entry_id
         self.command = command
+        self.run_id = run_id
         self.status = status
         self.user = user
         self.timestamp = timestamp
@@ -464,6 +489,7 @@ class CommandLogEntry:
         return {
             "command_log_entry_id": self.command_log_entry_id,
             "command": self.command,
+            "run_id": self.run_id,
             "status": self.status,
             "user": self.user,
             "timestamp": self.timestamp,
@@ -477,6 +503,7 @@ class CommandLogEntry:
         return CommandLogEntry(
             command_log_entry_id=d["command_log_entry_id"],
             command=d["command"],
+            run_id=d["run_id"],
             status=d["status"],
             user=d["user"],
             timestamp=d["timestamp"],
