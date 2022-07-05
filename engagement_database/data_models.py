@@ -403,9 +403,11 @@ class HistoryEntryOrigin(object):
         json.dumps(self.details)
 
 
-class CommandStatus:
+class CommandStatuses:
     STARTED = "STARTED"
     COMPLETED_SUCCESSFULLY = "COMPLETED_SUCCESSFULLY"
+
+    VALUES = {STARTED, COMPLETED_SUCCESSFULLY}
 
 
 class CommandLogEntry:
@@ -485,6 +487,8 @@ class CommandLogEntry:
         self.commit = commit
         self.line = line
 
+        self.validate()
+
     def to_dict(self):
         return {
             "command_log_entry_id": self.command_log_entry_id,
@@ -512,5 +516,9 @@ class CommandLogEntry:
             line=d["line"]
         )
 
+    def validate(self):
+        assert self.status in CommandStatuses.VALUES
+
     def copy(self):
+        self.validate()
         return self.from_dict(self.to_dict())
