@@ -109,7 +109,7 @@ class EngagementDatabase(object):
             return None
         return Message.from_dict(doc.to_dict())
 
-    def get_messages(self, firestore_query_filter=lambda q: q, transaction=None):
+    def get_messages(self, firestore_query_filter=lambda q: q, transaction=None, batch_size=None):
         """
         Gets messages from the database.
 
@@ -128,8 +128,22 @@ class EngagementDatabase(object):
         """
         messages_ref = self._messages_ref()
         query = firestore_query_filter(messages_ref)
+
+        if batch_size is not None:
+            query = query.limit(batch_size)
+
         data = query.get(transaction=transaction)
-        return [Message.from_dict(d.to_dict()) for d in data]
+        messages = [Message.from_dict(d.to_dict()) for d in data]
+
+        if batch_size is None:
+            return messages
+
+        last_msg = messages[-1]
+        while last_msg is not None:
+            batch = query.start_after(last_msg.to_dict()).get()
+            messages.extend([Message.from_dict(d.to_dict()) for d in batch])
+            last_msg = None if len(batch) == 0 else batch[-1]
+        return messsages
 
     def set_message(self, message, origin, transaction=None):
         """
