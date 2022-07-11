@@ -130,6 +130,7 @@ class EngagementDatabase(object):
         query = firestore_query_filter(messages_ref)
 
         if batch_size is not None:
+            query = query.order_by("last_updated").order_by("message_id")
             query = query.limit(batch_size)
 
         data = query.get(transaction=transaction)
