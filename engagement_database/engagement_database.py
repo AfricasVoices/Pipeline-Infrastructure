@@ -144,7 +144,7 @@ class EngagementDatabase(object):
             batch = query.start_after(last_msg.to_dict()).get()
             messages.extend([Message.from_dict(d.to_dict()) for d in batch])
             last_msg = None if len(batch) == 0 else batch[-1]
-        return messsages
+        return messages
 
     def set_message(self, message, origin, transaction=None):
         """
