@@ -139,6 +139,9 @@ class EngagementDatabase(object):
         if batch_size is None:
             return messages
 
+        if len(messages) == 0:
+            return []
+
         last_msg = messages[-1]
         while last_msg is not None:
             batch = query.start_after(last_msg.to_dict()).get()
