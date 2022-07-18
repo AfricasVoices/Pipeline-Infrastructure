@@ -54,6 +54,12 @@ class EngagementDatabase(object):
     def _message_ref(self, message_id):
         return self._messages_ref().document(message_id)
 
+    def _command_logs_ref(self):
+        return self._database_ref().collection("command_logs")
+
+    def _command_log_entry_ref(self, command_log_entry_id):
+        return self._command_logs_ref().document(command_log_entry_id)
+
     def get_history(self, firestore_query_filter=lambda q: q, transaction=None):
         """
         Gets all the history entries in the database.
@@ -175,6 +181,18 @@ class EngagementDatabase(object):
 
         if commit_before_returning:
             transaction.commit()
+
+    def set_command_log_entry(self, command_log_entry, transaction=None):
+        command_log_entry = command_log_entry.copy()
+
+        if command_log_entry.timestamp is None:
+            command_log_entry.timestamp = firestore.SERVER_TIMESTAMP
+
+        ref = self._command_log_entry_ref(command_log_entry.command_log_entry_id)
+        if transaction is None:
+            ref.set(command_log_entry.to_dict())
+        else:
+            transaction.set(ref, command_log_entry.to_dict())
 
     def restore_doc(self, doc, path, transaction=None):
         """
