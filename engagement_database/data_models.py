@@ -417,7 +417,6 @@ class CommandLogEntry:
     def __init__(self, status, command_log_entry_id=None, command=None, run_id=None, user=None, timestamp=None,
                  project=None, commit=None, line=None):
         """
-
         :param status: A `CommandStatus`. Commands should log when they start and when they finish, to help debugging
                        database states caused by partially completed commands.
         :type status: str
