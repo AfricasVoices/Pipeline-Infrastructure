@@ -115,7 +115,7 @@ class EngagementDatabase(object):
             return None
         return Message.from_dict(doc.to_dict())
 
-    def get_messages(self, firestore_query_filter=lambda q: q, transaction=None):
+    def get_messages(self, firestore_query_filter=lambda q: q, transaction=None, batch_size=None):
         """
         Gets messages from the database.
 
@@ -129,13 +129,35 @@ class EngagementDatabase(object):
         :type firestore_query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
         :param transaction: Transaction to run this get in or None.
         :type transaction: google.cloud.firestore.Transaction | None
+        :param batch_size: If set, internally fetches the messages in batches of `batch_size`. This allows
+                           `get_messages` to handle datasets larger than what can be downloaded from Firestore within
+                           1 minute, and is recommended for queries that retrieve a large number of documents.
+                           Note that enabling batching may require an additional index to be constructed, and will
+                           slow down very small queries so isn't recommended in all circumstances.
+                           If None, fetches all messages in a single request from Firestore.
+        :type batch_size: int | None
         :return: Messages downloaded from the database.
         :rtype: list of engagement_database.data_models.Message
         """
         messages_ref = self._messages_ref()
         query = firestore_query_filter(messages_ref)
+
+        if batch_size is None:
+            data = query.get(transaction=transaction)
+            return [Message.from_dict(d.to_dict()) for d in data]
+
+        query = query.order_by("last_updated").order_by("message_id")
+        query = query.limit(batch_size)
+
         data = query.get(transaction=transaction)
-        return [Message.from_dict(d.to_dict()) for d in data]
+        messages = [Message.from_dict(d.to_dict()) for d in data]
+
+        last_msg = None if len(messages) == 0 else messages[-1]
+        while last_msg is not None:
+            batch = query.start_after(last_msg.to_dict()).get(transaction=transaction)
+            messages.extend([Message.from_dict(d.to_dict()) for d in batch])
+            last_msg = None if len(batch) == 0 else batch[-1]
+        return messages
 
     def set_message(self, message, origin, transaction=None):
         """
