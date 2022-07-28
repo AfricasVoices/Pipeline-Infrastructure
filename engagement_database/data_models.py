@@ -517,13 +517,28 @@ class CommandLogEntry:
 
     @classmethod
     def from_dict(cls, d):
-        return CommandLogEntry(
+        """
+        Deserializes a dict to a CommandLogEntry.
+
+        Converts timestamps that were serialized to strings by `cls.to_dict` back to Python datetime objects.
+
+        :param d: Dict to deserialize.
+        :type d: dict
+        :return: Deserialized command log entry
+        :rtype: CommandLogEntry
+        """
+        # Handle variables that may have been serialized to strings by `cls.to_dict()`.
+        timestamp = d["timestamp"]
+        if type(timestamp) == str:
+            timestamp = datetime.fromisoformat(timestamp)
+
+        return cls(
             command_log_entry_id=d["command_log_entry_id"],
             command=d["command"],
             run_id=d["run_id"],
             status=d["status"],
             user=d["user"],
-            timestamp=d["timestamp"],
+            timestamp=timestamp,
             project=d["project"],
             commit=d["commit"],
             line=d["line"]
