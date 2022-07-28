@@ -488,8 +488,17 @@ class CommandLogEntry:
 
         self.validate()
 
-    def to_dict(self):
-        return {
+    def to_dict(self, serialize_datetimes_to_str=False):
+        """
+        Serializes this command log entry to a dict.
+
+        :param serialize_datetimes_to_str: Whether to serialize timestamps to strings instead of leaving as Python
+                                           datetime objects.
+        :type serialize_datetimes_to_str: bool
+        :return: This command log entry serialized to a dict.
+        rtype: dict
+        """
+        command_log_entry_dict = {
             "command_log_entry_id": self.command_log_entry_id,
             "command": self.command,
             "run_id": self.run_id,
@@ -500,6 +509,11 @@ class CommandLogEntry:
             "commit": self.commit,
             "line": self.line
         }
+
+        if serialize_datetimes_to_str:
+            command_log_entry_dict["timestamp"] = command_log_entry_dict["timestamp"].isoformat()
+
+        return command_log_entry_dict
 
     @classmethod
     def from_dict(cls, d):
