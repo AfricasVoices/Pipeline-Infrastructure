@@ -3,7 +3,7 @@ import uuid
 from google.cloud import firestore
 from google.cloud.firestore_v1 import DocumentReference
 
-from engagement_database.data_models import Message, HistoryEntry
+from engagement_database.data_models import Message, HistoryEntry, CommandLogEntry
 from util.firestore_utils import make_firestore_client
 
 
@@ -203,6 +203,26 @@ class EngagementDatabase(object):
 
         if commit_before_returning:
             transaction.commit()
+
+    def get_command_log_entries(self, firestore_query_filter=lambda q: q, transaction=None):
+        """
+        Gets all the command log entries in the database.
+
+        Note that requesting large numbers of messages is expensive and this function doesn't guarantee that all
+        messages will be downloaded. Use of where and limit filters is strongly encouraged.
+
+        :param firestore_query_filter: Filter to apply to the underlying Firestore query.
+        :type firestore_query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
+        :param transaction: Transaction to run this get in or None.
+        :type transaction: google.cloud.firestore.Transaction | None
+        :return: Command log entries.
+        :rtype: list of engagement_database.data_models.CommandLogEntry
+        """
+        query = self._command_logs_ref()
+        query = firestore_query_filter(query)
+        data = query.get(transaction=transaction)
+
+        return [CommandLogEntry.from_dict(d.to_dict()) for d in data]
 
     def set_command_log_entry(self, command_log_entry, transaction=None):
         command_log_entry = command_log_entry.copy()

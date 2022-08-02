@@ -488,8 +488,17 @@ class CommandLogEntry:
 
         self.validate()
 
-    def to_dict(self):
-        return {
+    def to_dict(self, serialize_datetimes_to_str=False):
+        """
+        Serializes this command log entry to a dict.
+
+        :param serialize_datetimes_to_str: Whether to serialize timestamps to strings instead of leaving as Python
+                                           datetime objects.
+        :type serialize_datetimes_to_str: bool
+        :return: This command log entry serialized to a dict.
+        rtype: dict
+        """
+        command_log_entry_dict = {
             "command_log_entry_id": self.command_log_entry_id,
             "command": self.command,
             "run_id": self.run_id,
@@ -501,15 +510,35 @@ class CommandLogEntry:
             "line": self.line
         }
 
+        if serialize_datetimes_to_str:
+            command_log_entry_dict["timestamp"] = command_log_entry_dict["timestamp"].isoformat()
+
+        return command_log_entry_dict
+
     @classmethod
     def from_dict(cls, d):
-        return CommandLogEntry(
+        """
+        Deserializes a dict to a CommandLogEntry.
+
+        Converts timestamps that were serialized to strings by `cls.to_dict` back to Python datetime objects.
+
+        :param d: Dict to deserialize.
+        :type d: dict
+        :return: Deserialized command log entry
+        :rtype: CommandLogEntry
+        """
+        # Handle variables that may have been serialized to strings by `cls.to_dict()`.
+        timestamp = d["timestamp"]
+        if type(timestamp) == str:
+            timestamp = datetime.fromisoformat(timestamp)
+
+        return cls(
             command_log_entry_id=d["command_log_entry_id"],
             command=d["command"],
             run_id=d["run_id"],
             status=d["status"],
             user=d["user"],
-            timestamp=d["timestamp"],
+            timestamp=timestamp,
             project=d["project"],
             commit=d["commit"],
             line=d["line"]
