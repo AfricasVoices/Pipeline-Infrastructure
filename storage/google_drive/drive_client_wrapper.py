@@ -355,3 +355,23 @@ def delete_object(object_id):
     """
     log.warning(f"Deleting Google Drive object with id '{object_id}'...")
     _drive_service.files().delete(fileId=object_id).execute()
+
+def transfer_object_ownership(object_id, new_owner_email_address):
+    """
+    Transfers the object ownership to a different user with the given email address.
+
+    :param object_id: Drive object id of the object to delete.
+    :type object_id: str
+    :param new_owner_email_address
+    :type new_owner_email_address: str
+    """
+    log.warning(f"Transferring ownership of Google Drive object with id '{object_id}' to {new_owner_email_address}...")
+    
+    _drive_service.permissions().update(fileId=object_id, emailAddress=new_owner_email_address, role=owner transferOwnership=True).execute()
+
+    new_permission = {
+                'value' : new_owner_email_address,
+                'type' : 'user',
+                'role' : 'owner'
+            }
+    _drive_service.permissions().update(fileId=object_id, body=new_permission transferOwnership=True).execute()
