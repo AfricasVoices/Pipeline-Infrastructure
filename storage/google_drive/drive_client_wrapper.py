@@ -368,13 +368,15 @@ def transfer_object_ownership(object_id, new_owner_email_address):
     log.warning(f"Transferring ownership of Google Drive object with id '{object_id}' to {new_owner_email_address}...")
 
     new_permission = {
-                    'value' : new_owner_email_address,
+                    'emailAdress' : new_owner_email_address,
                     'type' : 'user',
                     'role' : 'owner'
                 }
+    '''
     file_permissions = _drive_service.permissions().list(fileId=object_id).execute()
     permission_id = None
     for permission_dict in file_permissions['permissions']:
         if permission_dict['role'] == 'owner':
             permission_id = permission_dict['id']
-    _drive_service.permissions().update(fileId=object_id, permissionId=permission_id, body=new_permission).execute()
+    '''
+    _drive_service.permissions().create(fileId=object_id, body=new_permission).execute()
