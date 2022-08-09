@@ -370,7 +370,8 @@ def transfer_object_ownership(object_id, new_owner_email_address):
     new_permission = {
                     'emailAddress' : new_owner_email_address,
                     'type' : 'user',
-                    'role' : 'owner'
+                    'role' : 'owner',
+                    'transferOwnership': True
                 }
     '''
     file_permissions = _drive_service.permissions().list(fileId=object_id).execute()
