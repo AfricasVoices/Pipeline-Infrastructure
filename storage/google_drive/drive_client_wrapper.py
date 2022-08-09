@@ -366,12 +366,14 @@ def transfer_object_ownership(object_id, new_owner_email_address):
     :type new_owner_email_address: str
     """
     log.warning(f"Transferring ownership of Google Drive object with id '{object_id}' to {new_owner_email_address}...")
-    
-    _drive_service.permissions().update(fileId=object_id, emailAddress=new_owner_email_address, role='owner', transferOwnership=True).execute()
-
-    new_permission = {
-                'value' : new_owner_email_address,
-                'type' : 'user',
-                'role' : 'owner'
-            }
-    _drive_service.permissions().update(fileId=object_id, body=new_permission, transferOwnership=True).execute()
+    try:
+        log.debug("experiment 1")
+        _drive_service.permissions().update(fileId=object_id, emailAddress=new_owner_email_address, role='owner', transferOwnership=True).execute()
+    except:
+        log.debug("experiment 2")
+        new_permission = {
+                    'value' : new_owner_email_address,
+                    'type' : 'user',
+                    'role' : 'owner'
+                }
+        _drive_service.permissions().update(fileId=object_id, body=new_permission, transferOwnership=True).execute()
