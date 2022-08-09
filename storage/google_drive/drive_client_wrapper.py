@@ -371,7 +371,6 @@ def transfer_object_ownership(object_id, new_owner_email_address):
                     'emailAddress' : new_owner_email_address,
                     'type' : 'user',
                     'role' : 'owner',
-                    'transferOwnership': True
                 }
     '''
     file_permissions = _drive_service.permissions().list(fileId=object_id).execute()
@@ -380,4 +379,4 @@ def transfer_object_ownership(object_id, new_owner_email_address):
         if permission_dict['role'] == 'owner':
             permission_id = permission_dict['id']
     '''
-    _drive_service.permissions().create(fileId=object_id, body=new_permission).execute()
+    _drive_service.permissions().create(fileId=object_id, body=new_permission, transferOwnership=True).execute()
