@@ -383,4 +383,4 @@ def transfer_object_ownership(object_id, new_owner_email_address):
     supportsAllDrives=True, transferOwnership=True).execute()
     '''
     _drive_service.permissions().update(fileId=object_id, permissionId=permission_id, body=new_permission, 
-    supportsAllDrives=True, transferOwnership=True).execute()
+    transferOwnership=True).execute()
