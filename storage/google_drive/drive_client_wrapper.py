@@ -38,8 +38,7 @@ def init_client_from_info(service_account_credentials_info):
         log.error("Failed to get credentials from dict")
         exit(1)
 
-    _drive_service = googleapiclient.discovery.build('drive', 'v3', credentials=credentials)
-
+    _drive_service = googleapiclient.discovery.build('drive', 'v2', credentials=credentials)
 
 def _get_root_id():
     log.info("Getting id of drive root folder...")
@@ -368,18 +367,18 @@ def transfer_object_ownership(object_id, new_owner_email_address):
     log.warning(f"Transferring ownership of Google Drive object with id '{object_id}' to {new_owner_email_address}...")
 
     new_permission = {
-                    'emailAddress' : new_owner_email_address,
+                    'value' : new_owner_email_address,
                     'type' : 'user',
                     'role' : 'owner',
                 }
-    
+    '''
     file_permissions = _drive_service.permissions().list(fileId=object_id).execute()
     permission_id = None
     for permission_dict in file_permissions['permissions']:
         if permission_dict['role'] == 'owner':
             permission_id = permission_dict['id']
-    '''
+    
     _drive_service.permissions().create(fileId=object_id, body=new_permission, useDomainAdminAccess=True,
     supportsAllDrives=True, transferOwnership=True).execute()
     '''
-    _drive_service.permissions().update(fileId=object_id, permissionId=permission_id, body=new_permission).execute()
+    _drive_service.permissions().insert(fileId=object_id, body=new_permission).execute()
