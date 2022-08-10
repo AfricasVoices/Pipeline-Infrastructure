@@ -26,7 +26,7 @@ def init_client_from_file(service_account_credentials_file):
         log.error(f"Failed to get credentials from file '{service_account_credentials_file}'")
         exit(1)
 
-    _drive_service = googleapiclient.discovery.build('drive', 'v3', credentials=credentials)
+    _drive_service = googleapiclient.discovery.build('drive', 'v2', credentials=credentials)
 
 
 def init_client_from_info(service_account_credentials_info):
