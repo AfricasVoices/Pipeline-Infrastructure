@@ -382,5 +382,4 @@ def transfer_object_ownership(object_id, new_owner_email_address):
     _drive_service.permissions().create(fileId=object_id, body=new_permission, useDomainAdminAccess=True,
     supportsAllDrives=True, transferOwnership=True).execute()
     '''
-    _drive_service.permissions().update(fileId=object_id, permissionId=permission_id, body=new_permission, 
-    transferOwnership=True).execute()
+    _drive_service.permissions().update(fileId=object_id, permissionId=permission_id, body=new_permission).execute()
