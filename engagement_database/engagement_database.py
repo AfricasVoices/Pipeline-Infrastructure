@@ -242,7 +242,7 @@ class EngagementDatabase(object):
 
         :param doc: Document to write.
         :type doc: any
-        :param path: Path to write the document to, relative to the the engagement database root document.
+        :param path: Path to write the document to, relative to the engagement database root document.
         :type path: str
         :param transaction: Transaction to run this update in or None.
                             If None, writes immediately, otherwise adds the updates to a transaction that will need
@@ -262,7 +262,7 @@ class EngagementDatabase(object):
         CAUTION: If used without care, this can break history. To archive messages while correctly preserving history,
         use `set_message` instead.
 
-        :param path: Path to the document to delete, relative to the the engagement database root document.
+        :param path: Path to the document to delete, relative to the engagement database root document.
         :type path: str
         :param transaction: Transaction to run this update in or None.
                             If None, writes immediately, otherwise adds the updates to a transaction that will need
