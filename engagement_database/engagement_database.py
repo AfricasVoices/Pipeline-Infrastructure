@@ -275,6 +275,25 @@ class EngagementDatabase(object):
         else:
             transaction.delete(ref)
 
+    def delete_message_and_history(self, message_id, transaction=None):
+        """
+        Deletes a message and its history entries.
+
+        :param message_id: Id of message to delete.
+        :type message_id: str
+        :param transaction: Transaction to run this update in or None.
+                            If None, writes immediately, otherwise adds the updates to a transaction that will need
+                            to be explicitly committed elsewhere.
+        :type transaction: google.cloud.firestore.Transaction | None
+        """
+        message_snapshot = self._message_ref(message_id).get()
+        history_entries = self.get_history_for_message(message_id)
+        if message_snapshot.exists:
+            self.delete_doc(f"messages/{message_id}", transaction=transaction)
+        
+        for history_entry in history_entries:
+            self.delete_doc(f"history/{history_entry.history_entry_id}", transaction=transaction)
+
     def restore_history_entry(self, history_entry, transaction=None):
         """
         Restores a history entry to the database.
