@@ -286,13 +286,25 @@ class EngagementDatabase(object):
                             to be explicitly committed elsewhere.
         :type transaction: google.cloud.firestore.Transaction | None
         """
-        message_snapshot = self._message_ref(message_id).get()
-        history_entries = self.get_history_for_message(message_id)
+        message_snapshot = self._message_ref(message_id).get(transaction=transaction)
+        history_entries = self.get_history_for_message(message_id, transaction=transaction)
+        
+        if transaction is None:
+            # If no transaction was given, run all the updates in a new batched-write transaction and flag that
+            # this transaction needs to be committed before returning from this function.
+            transaction = self._client.batch()
+            commit_before_returning = True
+        else:
+            commit_before_returning = False
+
         if message_snapshot.exists:
             self.delete_doc(f"messages/{message_id}", transaction=transaction)
         
         for history_entry in history_entries:
             self.delete_doc(f"history/{history_entry.history_entry_id}", transaction=transaction)
+
+        if commit_before_returning:
+            transaction.commit()
 
     def restore_history_entry(self, history_entry, transaction=None):
         """
