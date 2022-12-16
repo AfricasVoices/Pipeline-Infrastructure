@@ -297,7 +297,7 @@ class EngagementDatabase(object):
         else:
             commit_before_returning = False
 
-        if message is not None
+        if message is not None:
             self.delete_doc(f"messages/{message_id}", transaction=transaction)
         
         for history_entry in history_entries:
