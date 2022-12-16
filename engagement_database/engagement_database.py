@@ -286,7 +286,7 @@ class EngagementDatabase(object):
                             to be explicitly committed elsewhere.
         :type transaction: google.cloud.firestore.Transaction | None
         """
-        message_snapshot = self._message_ref(message_id).get(transaction=transaction)
+        message = self.get_message(message_id, transaction)
         history_entries = self.get_history_for_message(message_id, transaction=transaction)
         
         if transaction is None:
