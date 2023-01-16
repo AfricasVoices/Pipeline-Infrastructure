@@ -226,12 +226,13 @@ class FirestoreUuidTable(object):
 
         mappings_ref = self._mappings_ref()
 
+        # Fetch the entire mappings table from Firestore, in batches of 500 mappings at a time so large tables don't
+        # time out.
         batch = mappings_ref.limit(500).get()
         while len(batch) > 0:
             for mapping in batch:
                 self._mappings_cache[mapping.id] = mapping.get(_UUID_KEY_NAME)
                 reverse_mappings[mapping.get(_UUID_KEY_NAME)] = mapping.id
-            print(len(reverse_mappings))
             batch = mappings_ref.start_after(batch[-1]).limit(500).get()
         
         log.info(f"Loaded {len(reverse_mappings)} mappings")
