@@ -90,9 +90,9 @@ class EngagementDatabase(object):
             return [HistoryEntry.from_dict(d.to_dict()) for d in data]
 
         # Order by timestamp here in order to get a consistent fetch of history across all the batches.
-        # (If we order by default (document id) then we might not download a consistent fetch of messages. A consistent
-        #  fetch is one where we have downloaded all documents whose timestamp is earlier than the newest timestamp
-        #  in the fetch. A fetch would be inconsistent if documents were being updated between fetching batches).
+        # (A consistent fetch is one which contains all the history entries up to the latest one in the fetch.
+        #  If we ordered by default (document id), then we might miss some documents with low ids that are written
+        #  while batch-fetching the later ids).
         query = query.order_by("timestamp").limit(batch_size)
         data = query.get(transaction=transaction)
         history_entries = [HistoryEntry.from_dict(d.to_dict()) for d in data]
