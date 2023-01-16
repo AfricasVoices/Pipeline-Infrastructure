@@ -175,6 +175,9 @@ class EngagementDatabase(object):
             seen_ids.add(msg.message_id)
             de_duplicated_messages.append(msg)
 
+        # Ensure no duplicates remain
+        assert len(de_duplicated_messages) == len({msg.message_id for msg in de_duplicated_messages})
+
         return de_duplicated_messages
 
     def set_message(self, message, origin, transaction=None):
