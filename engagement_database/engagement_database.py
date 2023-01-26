@@ -72,11 +72,11 @@ class EngagementDatabase(object):
         :param transaction: Transaction to run this get in or None.
         :type transaction: google.cloud.firestore.Transaction | None
         :param batch_size: If set, internally fetches the messages in batches of `batch_size`. This allows
-                           `get_messages` to handle datasets larger than what can be downloaded from Firestore within
+                           `get_history` to handle datasets larger than what can be downloaded from Firestore within
                            1 minute, and is recommended for queries that retrieve a large number of documents.
                            Note that enabling batching may require an additional index to be constructed, and will
                            slow down very small queries so isn't recommended in all circumstances.
-                           Note that batch-fetch mode assumes history_entries are only ever created, not modified.
+                           Note also that batch-fetch mode assumes history_entries are only ever created, not modified.
                            If None, fetches all history entries in a single request from Firestore.
         :type batch_size: int | None
         :return: History entries for the requested message.
