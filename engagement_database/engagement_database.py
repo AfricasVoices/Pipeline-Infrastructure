@@ -120,7 +120,8 @@ class EngagementDatabase(object):
         Gets messages from the database.
 
         Note that requesting large numbers of messages is expensive and this function doesn't guarantee that all
-        messages will be downloaded. Use of where and limit filters is strongly encouraged.
+        messages will be downloaded. Use of where and limit filters, as well as the batch_size parameter, are strongly
+        encouraged.
 
         Note also that providing a transaction for a query that matches a lot of documents will lock a large number
         of documents, causing performance issues.
@@ -157,7 +158,27 @@ class EngagementDatabase(object):
             batch = query.start_after(last_msg.to_dict()).get(transaction=transaction)
             messages.extend([Message.from_dict(d.to_dict()) for d in batch])
             last_msg = None if len(batch) == 0 else batch[-1]
-        return messages
+
+        # By fetching in batches while writes are happening, it's possible to download multiple different versions of
+        # the same message, e.g. the versions of that message before and after a concurrent write.
+        # Just in case this happened, de-duplicate the fetched messages by message id, keeping only the latest version
+        # of each message.
+        messages = list(messages)
+        messages.sort(key=lambda msg: msg.last_updated, reverse=True)  # sort messages, most recently updated first
+
+        de_duplicated_messages = []
+        seen_ids = set()
+        for msg in messages:
+            if msg.message_id in seen_ids:
+                continue
+
+            seen_ids.add(msg.message_id)
+            de_duplicated_messages.append(msg)
+
+        # Ensure no duplicates remain
+        assert len(de_duplicated_messages) == len({msg.message_id for msg in de_duplicated_messages})
+
+        return de_duplicated_messages
 
     def set_message(self, message, origin, transaction=None):
         """
