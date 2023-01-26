@@ -60,7 +60,7 @@ class EngagementDatabase(object):
     def _command_log_entry_ref(self, command_log_entry_id):
         return self._command_logs_ref().document(command_log_entry_id)
 
-    def get_history(self, firestore_query_filter=lambda q: q, transaction=None):
+    def get_history(self, firestore_query_filter=lambda q: q, transaction=None, batch_size=None):
         """
         Gets all the history entries in the database.
 
@@ -71,14 +71,39 @@ class EngagementDatabase(object):
         :type firestore_query_filter: Callable of google.cloud.firestore.Query -> google.cloud.firestore.Query
         :param transaction: Transaction to run this get in or None.
         :type transaction: google.cloud.firestore.Transaction | None
+        :param batch_size: If set, internally fetches the messages in batches of `batch_size`. This allows
+                           `get_history` to handle datasets larger than what can be downloaded from Firestore within
+                           1 minute, and is recommended for queries that retrieve a large number of documents.
+                           Note that enabling batching may require an additional index to be constructed, and will
+                           slow down very small queries so isn't recommended in all circumstances.
+                           Note also that batch-fetch mode assumes history_entries are only ever created, not modified.
+                           If None, fetches all history entries in a single request from Firestore.
+        :type batch_size: int | None
         :return: History entries for the requested message.
         :rtype: list of engagement_database.data_models.HistoryEntry
         """
         query = self._history_ref()
         query = firestore_query_filter(query)
-        data = query.get(transaction=transaction)
 
-        return [HistoryEntry.from_dict(d.to_dict()) for d in data]
+        if batch_size is None:
+            data = query.get(transaction=transaction)
+            return [HistoryEntry.from_dict(d.to_dict()) for d in data]
+
+        # Order by timestamp here in order to get a consistent fetch of history across all the batches.
+        # (A consistent fetch is one which contains all the history entries up to the latest one in the fetch.
+        #  If we ordered by default (document id), then we might miss some documents with low ids that are written
+        #  while batch-fetching the later ids).
+        query = query.order_by("timestamp").limit(batch_size)
+        data = query.get(transaction=transaction)
+        history_entries = [HistoryEntry.from_dict(d.to_dict()) for d in data]
+
+        last_history_entry = None if len(history_entries) == 0 else history_entries[-1]
+        while last_history_entry is not None:
+            batch = query.start_after(last_history_entry.to_dict()).get(transaction=transaction)
+            history_entries.extend([HistoryEntry.from_dict(d.to_dict()) for d in batch])
+            last_history_entry = None if len(batch) == 0 else batch[-1]
+
+        return history_entries
 
     def get_history_for_message(self, message_id, firestore_query_filter=lambda q: q, transaction=None):
         """
