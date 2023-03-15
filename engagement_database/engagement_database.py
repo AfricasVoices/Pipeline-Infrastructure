@@ -334,6 +334,7 @@ class EngagementDatabase(object):
         """
         message = self.get_message(message_id, transaction=transaction)
         history_entries = self.get_history_for_message(message_id, transaction=transaction)
+        print(message_id, history_entries)
         
         if transaction is None:
             # If no transaction was given, run all the updates in a new batched-write transaction and flag that
