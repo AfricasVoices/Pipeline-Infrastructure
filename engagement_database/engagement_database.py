@@ -344,6 +344,7 @@ class EngagementDatabase(object):
             commit_before_returning = False
 
         if message is not None:
+            assert len(history_entries) > 0, f"No history entries found for message with id {message_id}"
             self.delete_doc(f"messages/{message_id}", transaction=transaction)
         
         for history_entry in history_entries:
