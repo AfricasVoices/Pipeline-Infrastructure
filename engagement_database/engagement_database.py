@@ -118,7 +118,8 @@ class EngagementDatabase(object):
         :return: History entries for the requested message.
         :rtype: list of engagement_database.data_models.HistoryEntry
         """
-        query = self._history_ref().where("db_update_path", "==", f"messages/{message_id}")
+        db_update_path = self._local_path_for_ref(self._message_ref(message_id))
+        query = self._history_ref().where("db_update_path", "==", db_update_path)
         query = firestore_query_filter(query)
         data = query.get(transaction=transaction)
         return [HistoryEntry.from_dict(d.to_dict()) for d in data]
