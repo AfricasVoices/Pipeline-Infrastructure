@@ -118,8 +118,8 @@ class EngagementDatabase(object):
         :return: History entries for the requested message.
         :rtype: list of engagement_database.data_models.HistoryEntry
         """
-        message_ref = self._message_ref(message_id)
-        query = self._history_ref().where("update_path", "==", message_ref.path)
+        db_update_path = self._local_path_for_ref(self._message_ref(message_id))
+        query = self._history_ref().where("db_update_path", "==", db_update_path)
         query = firestore_query_filter(query)
         data = query.get(transaction=transaction)
         return [HistoryEntry.from_dict(d.to_dict()) for d in data]
@@ -344,6 +344,7 @@ class EngagementDatabase(object):
             commit_before_returning = False
 
         if message is not None:
+            assert len(history_entries) > 0, f"No history entries found for message with id {message_id}"
             self.delete_doc(f"messages/{message_id}", transaction=transaction)
         
         for history_entry in history_entries:
