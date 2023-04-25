@@ -223,9 +223,17 @@ class FirestoreUuidTable(object):
         # Return a mapping data for the uuids that were in the collection
         log.info(f"Looking up the data for {len(uuids_to_lookup)} uuids from Firestore...")
         reverse_mappings = dict()
-        for mapping in self._mappings_ref().get():
-            self._mappings_cache[mapping.id] = mapping.get(_UUID_KEY_NAME)
-            reverse_mappings[mapping.get(_UUID_KEY_NAME)] = mapping.id
+
+        mappings_ref = self._mappings_ref()
+
+        # Fetch the entire mappings table from Firestore, in batches of 500 mappings at a time so large tables don't
+        # time out.
+        batch = mappings_ref.limit(BATCH_SIZE).get()
+        while len(batch) > 0:
+            for mapping in batch:
+                self._mappings_cache[mapping.id] = mapping.get(_UUID_KEY_NAME)
+                reverse_mappings[mapping.get(_UUID_KEY_NAME)] = mapping.id
+            batch = mappings_ref.start_after(batch[-1]).limit(BATCH_SIZE).get()
         
         log.info(f"Loaded {len(reverse_mappings)} mappings")
 
