@@ -233,7 +233,7 @@ class FirestoreUuidTable(object):
             for mapping in batch:
                 self._mappings_cache[mapping.id] = mapping.get(_UUID_KEY_NAME)
                 reverse_mappings[mapping.get(_UUID_KEY_NAME)] = mapping.id
-            batch = mappings_ref.start_after(batch[-1]).limit(BATCH_SIZE).stream()
+            batch = mappings_ref.start_after(batch[-1]).limit(BATCH_SIZE).get()
         
         log.info(f"Loaded {len(reverse_mappings)} mappings")
 
