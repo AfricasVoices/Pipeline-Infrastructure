@@ -103,7 +103,7 @@ class AnalysisDashboard:
         return self._firestore.document(f"series/${series_id}")
 
     def _series_user_ref(self, series_id, user_id):
-        return self._series_ref(series_id).document(f"users/{user_id}")
+        return self._series_ref(series_id).collection(f"users").document(user_id)
 
     def get_series_user(self, series_id, user_id):
         doc = self._series_user_ref(series_id, user_id).get()
