@@ -1,7 +1,8 @@
 from core_data_modules.logging import Logger
-from firebase_admin import firestore, storage
+from firebase_admin import firestore, storage, auth
 
 from analysis_dashboard.data_models import AnalysisSnapshot
+from analysis_dashboard.data_models.series_user import SeriesUser
 from util.firebase_utils import initialize_firebase_app
 
 log = Logger(__name__)
@@ -16,6 +17,7 @@ class AnalysisDashboard:
         :type firebase_app: firebase_admin.App
         """
         self._firebase_app = firebase_app
+        self._firestore = firestore.client(self._firebase_app)
 
     @classmethod
     def init_from_credentials(cls, cert, app_name="AnalysisDashboard"):
@@ -65,8 +67,7 @@ class AnalysisDashboard:
         :param analysis_snapshot: Analysis snapshot document to write.
         :type analysis_snapshot: analysis_dashboard.data_models.AnalysisSnapshot
         """
-        firestore_client = firestore.client(self._firebase_app)
-        firestore_client \
+        self._firestore \
             .document(f"series/{series_id}/snapshots/{analysis_snapshot.snapshot_id}") \
             .create(analysis_snapshot.to_dict())
 
@@ -85,3 +86,37 @@ class AnalysisDashboard:
         blob = bucket.blob(blob_name)
         log.info(f"Uploading '{file_path}' -> '{blob.public_url}'...")
         blob.upload_from_filename(file_path)
+
+    def get_firebase_user_with_email(self, email):
+        return auth.get_user_by_email(email, app=self._firebase_app)
+
+    def create_firebase_user_with_email(self, email):
+        log.info(f"Attempting to create a new user with email '{email}'...")
+        return auth.create_user(email=email, app=self._firebase_app)
+
+    def ensure_firebase_user_exists_with_email(self, email):
+        user = self.get_firebase_user_with_email(email)
+        if user is None:
+            self.create_firebase_user_with_email(email)
+
+    def _series_ref(self, series_id):
+        return self._firestore.document(f"series/${series_id}")
+
+    def _series_user_ref(self, series_id, user_id):
+        return self._series_ref(series_id).document(f"users/{user_id}")
+
+    def get_series_user(self, series_id, user_id):
+        doc = self._series_user_ref(series_id, user_id).get()
+        if not doc.exists:
+            return None
+        return SeriesUser.from_dict(doc.to_dict())
+
+    def get_series_users(self, series_id):
+        data = self._series_ref(series_id).collection("users").get()
+        return [SeriesUser.from_dict(d) for d in data]
+
+    def set_series_user(self, series_id, user_id, series_user):
+        self._series_user_ref(series_id, user_id).set(series_user.to_dict())
+
+    def delete_series_user(self, series_id, user_id):
+        self._series_user_ref(series_id, user_id).delete()
