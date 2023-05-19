@@ -54,9 +54,9 @@ class AnalysisDashboard:
             )
 
         log.info(f"Writing analysis snapshot document to Firestore...")
-        self.creat_snapshot_doc_in_firestore(series_id, snapshot)
+        self.create_snapshot_doc_in_firestore(series_id, snapshot)
 
-    def creat_snapshot_doc_in_firestore(self, series_id, analysis_snapshot):
+    def create_snapshot_doc_in_firestore(self, series_id, analysis_snapshot):
         """
         Writes a snapshot document to the AnalysisDashboard firestore in 'create' mode.
 
