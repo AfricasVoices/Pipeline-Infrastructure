@@ -1,3 +1,5 @@
+from os.path import getsize
+
 from core_data_modules.logging import Logger
 from firebase_admin import firestore, storage
 
@@ -85,5 +87,5 @@ class AnalysisDashboard:
         """
         bucket = storage.bucket(bucket_name, app=self._firebase_app)
         blob = bucket.blob(blob_name)
-        log.info(f"Uploading '{file_path}' -> '{blob.public_url}'...")
+        log.info(f"Uploading '{file_path}' -> '{blob.public_url}' ({getsize(file_path)} bytes)...")
         blob.upload_from_filename(file_path)
