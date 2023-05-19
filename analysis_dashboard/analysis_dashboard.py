@@ -29,7 +29,7 @@ class AnalysisDashboard:
         """
         return cls(initialize_firebase_app(cert, app_name))
 
-    def create_snapshot(self, series_id, files):
+    def create_snapshot(self, series_id, files, bucket_name):
         """
         Creates a new analysis snapshot in Firebase.
 
@@ -37,6 +37,8 @@ class AnalysisDashboard:
         :type series_id: str
         :param files: Files to upload as part of the snapshot, as a dictionary of (local file path) -> (blob name).
         :type files: dict of str -> str
+        :param bucket_name: Name of bucket to upload files to e.g. 'analysis-dashboard.appspot.com'
+        :type bucket_name: str
         """
         snapshot = AnalysisSnapshot(
             datasets=list(files.values())
@@ -48,7 +50,7 @@ class AnalysisDashboard:
             self.upload_file_to_storage(
                 file_path=local_file_path,
                 blob_name=f"series/{series_id}/snapshots/{snapshot.snapshot_id}/files/{blob_name}",
-                bucket_name="test"
+                bucket_name=bucket_name
             )
 
         log.info(f"Writing analysis snapshot document to Firestore...")
