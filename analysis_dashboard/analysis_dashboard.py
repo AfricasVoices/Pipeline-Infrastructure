@@ -43,7 +43,7 @@ class AnalysisDashboard:
         :type bucket_name: str
         """
         snapshot = AnalysisSnapshot(
-            datasets=list(files.values())
+            files=list(files.values())
         )
 
         log.info(f"Creating new analysis snapshot with id {snapshot.snapshot_id}...")

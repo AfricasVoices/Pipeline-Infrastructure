@@ -2,15 +2,13 @@ import uuid
 
 
 class AnalysisSnapshot:
-    def __init__(self, datasets, snapshot_id=None):
+    def __init__(self, files, snapshot_id=None):
         """
         Represents a single version of a piece of analysis, describing which datasets are available and how those
         datasets were generated.
 
-        :param datasets: List of datasets available.
-                         TODO rename to files?
-        :type datasets: list of str
-                        TODO change to dict of dataset_name -> bucket_name?
+        :param files: List of files available.
+        :type files: list of str
         :param snapshot_id: Id of this analysis snapshot. If None, a message id will automatically be generated in
                            the constructor.
         :type snapshot_id: str | None
@@ -19,7 +17,7 @@ class AnalysisSnapshot:
             snapshot_id = str(uuid.uuid4())
 
         self.snapshot_id = snapshot_id
-        self.datasets = datasets
+        self.datasets = files
 
     def to_dict(self):
         return {
