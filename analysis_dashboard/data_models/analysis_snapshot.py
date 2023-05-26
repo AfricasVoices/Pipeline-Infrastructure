@@ -7,6 +7,8 @@ class AnalysisSnapshot:
         Represents a single version of a piece of analysis, describing which datasets are available and how those
         datasets were generated.
 
+        TODO: Support tags
+
         :param files: List of files available.
         :type files: list of str
         :param snapshot_id: Id of this analysis snapshot. If None, a message id will automatically be generated in
@@ -22,7 +24,9 @@ class AnalysisSnapshot:
     def to_dict(self):
         return {
             "snapshot_id": self.snapshot_id,
-            "files": self.datasets
+            "files": self.datasets,
+            "tags": [],
+            "tag_categories": []
         }
 
     @classmethod
