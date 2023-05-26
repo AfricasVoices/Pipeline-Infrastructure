@@ -22,12 +22,12 @@ class AnalysisSnapshot:
     def to_dict(self):
         return {
             "snapshot_id": self.snapshot_id,
-            "datasets": self.datasets
+            "files": self.datasets
         }
 
     @classmethod
     def from_dict(cls, d):
         return cls(
             d["snapshot_id"],
-            d["datasets"]
+            d["files"]
         )
