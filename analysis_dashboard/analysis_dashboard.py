@@ -22,14 +22,19 @@ class AnalysisDashboard:
     @classmethod
     def init_from_credentials(cls, cert, app_name="AnalysisDashboard"):
         """
+        Initialises an `AnalysisDashboard` instance from the given Firebase credentials.
+
+        The credentials define which Firebase instance to connect to.
+
         :param cert: Firestore service account certificate, as a path to a file or a dictionary.
         :type cert: str | dict
         :param app_name: Name to give the Firebase app instance used to connect.
         :type app_name: str
-        :return:
+        :return: Initialised AnalysisDashboard instance.
         :rtype: AnalysisDashboard
         """
-        return cls(initialize_firebase_app(cert, app_name))
+        firebase_app = initialize_firebase_app(cert, app_name)
+        return cls(firebase_app)
 
     def create_snapshot(self, series_id, files, bucket_name):
         """
