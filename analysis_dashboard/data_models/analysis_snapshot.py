@@ -7,10 +7,12 @@ class AnalysisSnapshot:
     datasets were generated.
     """
 
-    def __init__(self, files, snapshot_id=None):
+    def __init__(self, files, creation_date_time, snapshot_id=None):
         """
         :param files: List of files available.
         :type files: list of str
+        :param creation_date_time: The date and time when this snapshot was created in Firestore.
+        :type creation_date_time: datetime.datetime
         :param snapshot_id: Id of this analysis snapshot. If None, a message id will automatically be generated in
                            the constructor.
         :type snapshot_id: str | None
@@ -20,6 +22,7 @@ class AnalysisSnapshot:
             snapshot_id = str(uuid.uuid4())
 
         self.snapshot_id = snapshot_id
+        self.creation_date_time = creation_date_time
         self.files = files
 
     def to_dict(self):
@@ -31,6 +34,7 @@ class AnalysisSnapshot:
         """
         return {
             "snapshot_id": self.snapshot_id,
+            "creation_date_time": self.creation_date_time,
             "files": self.files,
             "tags": [],
             "tag_categories": []
@@ -48,5 +52,6 @@ class AnalysisSnapshot:
         """
         return cls(
             d["snapshot_id"],
+            d["creation_date_time"],
             d["files"]
         )

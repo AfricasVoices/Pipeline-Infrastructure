@@ -48,7 +48,8 @@ class AnalysisDashboard:
         :type bucket_name: str
         """
         snapshot = AnalysisSnapshot(
-            files=list(files.values())
+            files=list(files.values()),
+            creation_date_time=firestore.firestore.SERVER_TIMESTAMP
         )
 
         log.info(f"Creating new analysis snapshot with id {snapshot.snapshot_id}...")
